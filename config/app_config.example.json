@@ -1,0 +1,9 @@
+{
+  "APPWRITE_ENDPOINT": "https://cloud.appwrite.io/v1",
+  "APPWRITE_PROJECT_ID": "your-project-id",
+  "APPWRITE_DATABASE_ID": "app",
+  "APPWRITE_USER_SETTINGS_TABLE_ID": "user_settings",
+  "APPWRITE_LOGS_TABLE_ID": "logs",
+  "PASSWORD_RECOVERY_URL": "http://localhost:8080/reset-password",
+  "REMOTE_LOGGING_ENABLED": false
+}

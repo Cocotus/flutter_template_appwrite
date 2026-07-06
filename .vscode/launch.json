@@ -1,0 +1,35 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Web (Chrome)",
+            "request": "launch",
+            "type": "dart",
+            "program": "lib/main.dart",
+            "deviceId": "chrome",
+            "args": [
+                "--dart-define-from-file=config/app_config.json"
+            ]
+        },
+        {
+            "name": "Windows",
+            "request": "launch",
+            "type": "dart",
+            "program": "lib/main.dart",
+            "deviceId": "windows",
+            "args": [
+                "--dart-define-from-file=config/app_config.json"
+            ]
+        },
+        {
+            "name": "Linux",
+            "request": "launch",
+            "type": "dart",
+            "program": "lib/main.dart",
+            "deviceId": "linux",
+            "args": [
+                "--dart-define-from-file=config/app_config.json"
+            ]
+        }
+    ]
+}
