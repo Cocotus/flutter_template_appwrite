@@ -25,6 +25,15 @@
   "logs": "Logs",
   "developerMode": "Developer mode",
   "developerModeDescription": "Shows the live log view in the sidebar",
+  "demoMode": "Demo mode",
+  "@demoMode": {
+    "description": "Label of the login-page switch that enables fake data"
+  },
+  "demoModeDescription": "Explore the app with sample data, no account needed",
+  "demoBadge": "DEMO",
+  "@demoBadge": {
+    "description": "Header badge shown while the app runs on fake demo data"
+  },
   "save": "Save",
   "retry": "Retry",
 

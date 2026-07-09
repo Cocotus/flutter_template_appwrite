@@ -13,6 +13,11 @@ part of 'auth_service.dart';
 /// Kept alive because authentication is used across the whole app. Tests
 /// override this provider with a fake, e.g.
 /// `authServiceProvider.overrideWithValue(FakeAuthService())`.
+///
+/// When demo mode is active it returns a [DemoAuthService] instead, so the
+/// app runs with a fake account and never touches Appwrite. Because this
+/// watches [demoModeProvider], toggling the demo switch rebuilds this
+/// provider — and, transitively, [CurrentUser] and the router guard.
 
 @ProviderFor(authService)
 final authServiceProvider = AuthServiceProvider._();
@@ -22,6 +27,11 @@ final authServiceProvider = AuthServiceProvider._();
 /// Kept alive because authentication is used across the whole app. Tests
 /// override this provider with a fake, e.g.
 /// `authServiceProvider.overrideWithValue(FakeAuthService())`.
+///
+/// When demo mode is active it returns a [DemoAuthService] instead, so the
+/// app runs with a fake account and never touches Appwrite. Because this
+/// watches [demoModeProvider], toggling the demo switch rebuilds this
+/// provider — and, transitively, [CurrentUser] and the router guard.
 
 final class AuthServiceProvider
     extends $FunctionalProvider<AuthService, AuthService, AuthService>
@@ -31,6 +41,11 @@ final class AuthServiceProvider
   /// Kept alive because authentication is used across the whole app. Tests
   /// override this provider with a fake, e.g.
   /// `authServiceProvider.overrideWithValue(FakeAuthService())`.
+  ///
+  /// When demo mode is active it returns a [DemoAuthService] instead, so the
+  /// app runs with a fake account and never touches Appwrite. Because this
+  /// watches [demoModeProvider], toggling the demo switch rebuilds this
+  /// provider — and, transitively, [CurrentUser] and the router guard.
   AuthServiceProvider._()
     : super(
         from: null,
@@ -64,7 +79,7 @@ final class AuthServiceProvider
   }
 }
 
-String _$authServiceHash() => r'076be09233683f30c935a6c16a7278afa77d6a93';
+String _$authServiceHash() => r'8d4714ce7e048968546cd4967f06919a011d9869';
 
 /// Holds the currently logged-in Appwrite user, or `null` when logged out.
 ///

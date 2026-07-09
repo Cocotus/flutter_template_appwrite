@@ -13,6 +13,9 @@ part of 'database_service.dart';
 /// Kept alive because data access is used across the whole app. Tests
 /// override this provider with a fake, e.g.
 /// `databaseServiceProvider.overrideWithValue(FakeDatabaseService())`.
+///
+/// When demo mode is active it returns a [DemoDatabaseService] serving
+/// in-memory seed data, so every data-backed view works without Appwrite.
 
 @ProviderFor(databaseService)
 final databaseServiceProvider = DatabaseServiceProvider._();
@@ -22,6 +25,9 @@ final databaseServiceProvider = DatabaseServiceProvider._();
 /// Kept alive because data access is used across the whole app. Tests
 /// override this provider with a fake, e.g.
 /// `databaseServiceProvider.overrideWithValue(FakeDatabaseService())`.
+///
+/// When demo mode is active it returns a [DemoDatabaseService] serving
+/// in-memory seed data, so every data-backed view works without Appwrite.
 
 final class DatabaseServiceProvider
     extends
@@ -32,6 +38,9 @@ final class DatabaseServiceProvider
   /// Kept alive because data access is used across the whole app. Tests
   /// override this provider with a fake, e.g.
   /// `databaseServiceProvider.overrideWithValue(FakeDatabaseService())`.
+  ///
+  /// When demo mode is active it returns a [DemoDatabaseService] serving
+  /// in-memory seed data, so every data-backed view works without Appwrite.
   DatabaseServiceProvider._()
     : super(
         from: null,
@@ -65,4 +74,4 @@ final class DatabaseServiceProvider
   }
 }
 
-String _$databaseServiceHash() => r'77311de8a5a5cc2c4142113d08539e4d916eaccc';
+String _$databaseServiceHash() => r'c5a9501a9504c9a279f72e0c6931c0effa1400c3';

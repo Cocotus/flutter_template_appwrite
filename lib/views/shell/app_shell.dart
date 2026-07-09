@@ -6,6 +6,7 @@ import 'package:url_launcher/url_launcher.dart';
 
 import 'package:flutter_template_appwrite/l10n/app_localizations.dart';
 import 'package:flutter_template_appwrite/models/user_settings.dart';
+import 'package:flutter_template_appwrite/services/demo_mode_service.dart';
 import 'package:flutter_template_appwrite/services/user_settings_service.dart';
 import 'package:flutter_template_appwrite/widgets/user_avatar.dart';
 
@@ -39,13 +40,14 @@ class AppShell extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final AppLocalizations localizations = AppLocalizations.of(context)!;
     final UserSettings settings = ref.watch(userSettingsControllerProvider);
+    final bool isDemoMode = ref.watch(demoModeProvider);
 
     // The Logs entry is an opt-in developer feature; in debug builds it is
     // always available.
     final bool isLogsVisible = settings.developerMode || kDebugMode;
 
     return Scaffold(
-      appBar: _buildHeaderBar(context, localizations),
+      appBar: _buildHeaderBar(context, localizations, isDemoMode),
       body: LayoutBuilder(
         builder: (BuildContext context, BoxConstraints constraints) {
           // Auto-collapse on narrow windows; on wide windows the user's
@@ -80,6 +82,7 @@ class AppShell extends ConsumerWidget {
   PreferredSizeWidget _buildHeaderBar(
     BuildContext context,
     AppLocalizations localizations,
+    bool isDemoMode,
   ) {
     return AppBar(
       automaticallyImplyLeading: false,
@@ -93,6 +96,19 @@ class AppShell extends ConsumerWidget {
           ),
           const SizedBox(width: 12),
           Text(localizations.appTitle),
+          // Unmissable reminder that the app is showing fake data.
+          if (isDemoMode) ...<Widget>[
+            const SizedBox(width: 12),
+            Chip(
+              label: Text(localizations.demoBadge),
+              visualDensity: VisualDensity.compact,
+              backgroundColor: Theme.of(context).colorScheme.tertiaryContainer,
+              labelStyle: TextStyle(
+                color: Theme.of(context).colorScheme.onTertiaryContainer,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ],
         ],
       ),
       actions: <Widget>[

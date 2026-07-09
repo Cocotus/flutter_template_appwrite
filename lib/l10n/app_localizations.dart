@@ -224,6 +224,24 @@ abstract class AppLocalizations {
   /// **'Shows the live log view in the sidebar'**
   String get developerModeDescription;
 
+  /// Label of the login-page switch that enables fake data
+  ///
+  /// In en, this message translates to:
+  /// **'Demo mode'**
+  String get demoMode;
+
+  /// No description provided for @demoModeDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Explore the app with sample data, no account needed'**
+  String get demoModeDescription;
+
+  /// Header badge shown while the app runs on fake demo data
+  ///
+  /// In en, this message translates to:
+  /// **'DEMO'**
+  String get demoBadge;
+
   /// No description provided for @save.
   ///
   /// In en, this message translates to:

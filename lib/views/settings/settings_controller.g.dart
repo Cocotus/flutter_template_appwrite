@@ -55,7 +55,7 @@ final class SettingsControllerProvider
 }
 
 String _$settingsControllerHash() =>
-    r'9c386a9daf29beb38f3ac4277c81cd96213001e1';
+    r'25a4818efd3ef0092d4ee80c59df654bb38f5068';
 
 /// Controller for the settings view.
 ///

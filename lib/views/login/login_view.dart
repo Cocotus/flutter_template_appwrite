@@ -4,6 +4,8 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 
 import 'package:flutter_template_appwrite/l10n/app_localizations.dart';
 import 'package:flutter_template_appwrite/services/app_version_service.dart';
+import 'package:flutter_template_appwrite/services/demo/demo_data.dart';
+import 'package:flutter_template_appwrite/services/demo_mode_service.dart';
 import 'package:flutter_template_appwrite/services/theme_service.dart';
 import 'package:flutter_template_appwrite/utils/auth_error_mapper.dart';
 import 'package:flutter_template_appwrite/views/login/login_controller.dart';
@@ -186,7 +188,56 @@ class LoginView extends HookConsumerWidget {
             emailController: emailController,
           ),
         _buildToggleModeButton(localizations, isRegisterMode),
+        // Only rendered in builds that allow demo mode (debug, or a build
+        // compiled with --dart-define=DEMO_MODE_ALLOWED=true). In production
+        // it is absent entirely.
+        if (demoModeIsAllowed)
+          _buildDemoModeSwitch(
+            ref: ref,
+            localizations: localizations,
+            emailController: emailController,
+            passwordController: passwordController,
+            isRegisterMode: isRegisterMode,
+          ),
       ],
+    );
+  }
+
+  // Lets the user explore the app with fake data and no real backend.
+  // Switching it on swaps the auth/database services for in-memory fakes and
+  // PRE-FILLS the login form: the user then presses Login exactly as they
+  // would in a real sign-in, and the fake auth service accepts it. Switching
+  // it off restores the real Appwrite services and clears the form.
+  Widget _buildDemoModeSwitch({
+    required WidgetRef ref,
+    required AppLocalizations localizations,
+    required TextEditingController emailController,
+    required TextEditingController passwordController,
+    required ValueNotifier<bool> isRegisterMode,
+  }) {
+    final bool isDemoMode = ref.watch(demoModeProvider);
+
+    return Padding(
+      padding: const EdgeInsets.only(top: 8),
+      child: SwitchListTile(
+        contentPadding: EdgeInsets.zero,
+        secondary: const Icon(Icons.science_outlined),
+        title: Text(localizations.demoMode),
+        subtitle: Text(localizations.demoModeDescription),
+        value: isDemoMode,
+        onChanged: (bool enabled) async {
+          await ref.read(demoModeProvider.notifier).set(enabled: enabled);
+          if (enabled) {
+            // Present the normal login form, pre-filled with demo credentials.
+            isRegisterMode.value = false;
+            emailController.text = demoEmail;
+            passwordController.text = demoPassword;
+          } else {
+            emailController.clear();
+            passwordController.clear();
+          }
+        },
+      ),
     );
   }
 

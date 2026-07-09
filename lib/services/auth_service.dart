@@ -4,6 +4,8 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 import 'package:flutter_template_appwrite/config/app_config.dart';
 import 'package:flutter_template_appwrite/services/appwrite_service.dart';
+import 'package:flutter_template_appwrite/services/demo/demo_auth_service.dart';
+import 'package:flutter_template_appwrite/services/demo_mode_service.dart';
 import 'package:flutter_template_appwrite/services/logger_service.dart';
 
 part 'auth_service.g.dart';
@@ -86,8 +88,16 @@ class AuthService {
 /// Kept alive because authentication is used across the whole app. Tests
 /// override this provider with a fake, e.g.
 /// `authServiceProvider.overrideWithValue(FakeAuthService())`.
+///
+/// When demo mode is active it returns a [DemoAuthService] instead, so the
+/// app runs with a fake account and never touches Appwrite. Because this
+/// watches [demoModeProvider], toggling the demo switch rebuilds this
+/// provider — and, transitively, [CurrentUser] and the router guard.
 @Riverpod(keepAlive: true)
 AuthService authService(Ref ref) {
+  if (ref.watch(demoModeProvider)) {
+    return DemoAuthService();
+  }
   final AppwriteService appwrite = ref.watch(appwriteServiceProvider);
   return AuthService(account: appwrite.account);
 }

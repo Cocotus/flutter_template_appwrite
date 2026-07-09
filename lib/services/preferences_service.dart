@@ -49,6 +49,7 @@ class PreferencesService {
   final SharedPreferences _preferences;
 
   static const String _userSettingsKey = 'cached_user_settings';
+  static const String _demoModeKey = 'demo_mode_enabled';
 
   /// Returns the locally cached [UserSettings], or `null` when nothing has
   /// been cached yet (first app start) or the cache is unreadable.
@@ -77,6 +78,20 @@ class PreferencesService {
   /// Removes the cached settings (used on logout).
   Future<void> clearCachedUserSettings() async {
     await _preferences.remove(_userSettingsKey);
+  }
+
+  /// Returns the last chosen demo-mode preference (defaults to `false`).
+  ///
+  /// This is only the *stored user choice*; whether demo mode is actually
+  /// active also depends on the compile-time [AppConfig.demoModeAllowed]
+  /// gate — see the `DemoMode` provider.
+  bool readDemoMode() {
+    return _preferences.getBool(_demoModeKey) ?? false;
+  }
+
+  /// Persists the demo-mode [enabled] choice.
+  Future<void> writeDemoMode({required bool enabled}) async {
+    await _preferences.setBool(_demoModeKey, enabled);
   }
 }
 

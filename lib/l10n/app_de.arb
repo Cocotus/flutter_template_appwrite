@@ -22,6 +22,9 @@
   "logs": "Logs",
   "developerMode": "Entwicklermodus",
   "developerModeDescription": "Zeigt die Live-Logansicht in der Seitenleiste",
+  "demoMode": "Demomodus",
+  "demoModeDescription": "App mit Beispieldaten erkunden, ohne Konto",
+  "demoBadge": "DEMO",
   "save": "Speichern",
   "retry": "Erneut versuchen",
 

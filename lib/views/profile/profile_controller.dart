@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 import 'package:flutter_template_appwrite/services/auth_service.dart';
+import 'package:flutter_template_appwrite/services/demo_mode_service.dart';
 import 'package:flutter_template_appwrite/services/logger_service.dart';
 import 'package:flutter_template_appwrite/services/preferences_service.dart';
 import 'package:flutter_template_appwrite/services/user_settings_service.dart';
@@ -30,8 +31,18 @@ class ProfileController extends _$ProfileController {
 
     state = const AsyncValue<void>.loading();
     try {
+      // Capture this before switching services: logging out of a demo
+      // session must NOT hit Appwrite.
+      final bool wasDemoMode = ref.read(demoModeProvider);
+
       final AuthService authService = ref.read(authServiceProvider);
       await authService.logout();
+
+      // Leaving a demo session returns the app to the real login screen:
+      // turning demo mode off rebuilds the service layer back to Appwrite.
+      if (wasDemoMode) {
+        await ref.read(demoModeProvider.notifier).set(enabled: false);
+      }
 
       // Remove the previous user's cached settings so the next user on
       // this machine starts from defaults, then reset the in-memory state.

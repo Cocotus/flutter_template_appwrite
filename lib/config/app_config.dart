@@ -59,4 +59,21 @@ class AppConfig {
   static const bool remoteLoggingEnabled = bool.fromEnvironment(
     'REMOTE_LOGGING_ENABLED',
   );
+
+  /// Whether the app is ALLOWED to run in demo mode (fake auth + in-memory
+  /// data, no Appwrite backend required).
+  ///
+  /// This is the real, compile-time kill switch for the demo feature. It
+  /// gates BOTH the visibility of the login-page demo switch AND the ability
+  /// of the service layer to select the fake implementations — a runtime
+  /// toggle alone can never bypass authentication in a shipped binary.
+  ///
+  /// - Production build: omit the define → `false` → demo unreachable, the
+  ///   app always validates against Appwrite.
+  /// - Demo/showcase build: pass `--dart-define=DEMO_MODE_ALLOWED=true`.
+  /// - Debug builds additionally allow it regardless (see `DemoMode`), so
+  ///   developers can flip it without a special build.
+  static const bool demoModeAllowed = bool.fromEnvironment(
+    'DEMO_MODE_ALLOWED',
+  );
 }

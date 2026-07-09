@@ -45,7 +45,7 @@ final class ProfileControllerProvider
   ProfileController create() => ProfileController();
 }
 
-String _$profileControllerHash() => r'42aaff2a8bbd347b218b6c625271c6732fe04822';
+String _$profileControllerHash() => r'a655e74fd14eae4663cbdfcefe13932d8bbf848e';
 
 /// Controller for the profile view.
 ///

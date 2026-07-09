@@ -6,6 +6,8 @@ import 'package:flutter_template_appwrite/config/app_config.dart';
 import 'package:flutter_template_appwrite/models/remote_log_entry.dart';
 import 'package:flutter_template_appwrite/models/user_settings.dart';
 import 'package:flutter_template_appwrite/services/appwrite_service.dart';
+import 'package:flutter_template_appwrite/services/demo/demo_database_service.dart';
+import 'package:flutter_template_appwrite/services/demo_mode_service.dart';
 
 part 'database_service.g.dart';
 
@@ -95,8 +97,14 @@ class DatabaseService {
 /// Kept alive because data access is used across the whole app. Tests
 /// override this provider with a fake, e.g.
 /// `databaseServiceProvider.overrideWithValue(FakeDatabaseService())`.
+///
+/// When demo mode is active it returns a [DemoDatabaseService] serving
+/// in-memory seed data, so every data-backed view works without Appwrite.
 @Riverpod(keepAlive: true)
 DatabaseService databaseService(Ref ref) {
+  if (ref.watch(demoModeProvider)) {
+    return DemoDatabaseService();
+  }
   final AppwriteService appwrite = ref.watch(appwriteServiceProvider);
   return DatabaseService(tablesDB: appwrite.tablesDB);
 }

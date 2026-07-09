@@ -76,6 +76,16 @@ class AppLocalizationsDe extends AppLocalizations {
       'Zeigt die Live-Logansicht in der Seitenleiste';
 
   @override
+  String get demoMode => 'Demomodus';
+
+  @override
+  String get demoModeDescription =>
+      'App mit Beispieldaten erkunden, ohne Konto';
+
+  @override
+  String get demoBadge => 'DEMO';
+
+  @override
   String get save => 'Speichern';
 
   @override

@@ -76,6 +76,16 @@ class AppLocalizationsEn extends AppLocalizations {
       'Shows the live log view in the sidebar';
 
   @override
+  String get demoMode => 'Demo mode';
+
+  @override
+  String get demoModeDescription =>
+      'Explore the app with sample data, no account needed';
+
+  @override
+  String get demoBadge => 'DEMO';
+
+  @override
   String get save => 'Save';
 
   @override
