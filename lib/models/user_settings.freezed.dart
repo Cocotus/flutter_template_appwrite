@@ -18,7 +18,13 @@ mixin _$UserSettings {
 /// Whether the app uses the dark Material 3 color scheme.
  bool get isDarkMode;/// The active UI language code, e.g. `en` or `de`.
  String get languageCode;/// Whether the user manually collapsed the navigation sidebar.
- bool get sidebarCollapsed;/// Whether developer mode is enabled.
+ bool get sidebarCollapsed;/// The accent (seed) color as a 32-bit ARGB integer.
+///
+/// The whole Material 3 palette is derived from this single color via
+/// `ColorScheme.fromSeed` (see `AppTheme`), for both light and dark mode.
+/// Stored as an int so it serializes cleanly to JSON / Appwrite; the
+/// default matches the template's original blue seed.
+ int get accentColorValue;/// Whether developer mode is enabled.
 ///
 /// Developer mode reveals the "Logs" entry in the sidebar so the user
 /// can inspect live Talker logs inside the app (always visible in
@@ -37,16 +43,16 @@ $UserSettingsCopyWith<UserSettings> get copyWith => _$UserSettingsCopyWithImpl<U
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is UserSettings&&(identical(other.isDarkMode, isDarkMode) || other.isDarkMode == isDarkMode)&&(identical(other.languageCode, languageCode) || other.languageCode == languageCode)&&(identical(other.sidebarCollapsed, sidebarCollapsed) || other.sidebarCollapsed == sidebarCollapsed)&&(identical(other.developerMode, developerMode) || other.developerMode == developerMode)&&(identical(other.displayName, displayName) || other.displayName == displayName));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is UserSettings&&(identical(other.isDarkMode, isDarkMode) || other.isDarkMode == isDarkMode)&&(identical(other.languageCode, languageCode) || other.languageCode == languageCode)&&(identical(other.sidebarCollapsed, sidebarCollapsed) || other.sidebarCollapsed == sidebarCollapsed)&&(identical(other.accentColorValue, accentColorValue) || other.accentColorValue == accentColorValue)&&(identical(other.developerMode, developerMode) || other.developerMode == developerMode)&&(identical(other.displayName, displayName) || other.displayName == displayName));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,isDarkMode,languageCode,sidebarCollapsed,developerMode,displayName);
+int get hashCode => Object.hash(runtimeType,isDarkMode,languageCode,sidebarCollapsed,accentColorValue,developerMode,displayName);
 
 @override
 String toString() {
-  return 'UserSettings(isDarkMode: $isDarkMode, languageCode: $languageCode, sidebarCollapsed: $sidebarCollapsed, developerMode: $developerMode, displayName: $displayName)';
+  return 'UserSettings(isDarkMode: $isDarkMode, languageCode: $languageCode, sidebarCollapsed: $sidebarCollapsed, accentColorValue: $accentColorValue, developerMode: $developerMode, displayName: $displayName)';
 }
 
 
@@ -57,7 +63,7 @@ abstract mixin class $UserSettingsCopyWith<$Res>  {
   factory $UserSettingsCopyWith(UserSettings value, $Res Function(UserSettings) _then) = _$UserSettingsCopyWithImpl;
 @useResult
 $Res call({
- bool isDarkMode, String languageCode, bool sidebarCollapsed, bool developerMode, String displayName
+ bool isDarkMode, String languageCode, bool sidebarCollapsed, int accentColorValue, bool developerMode, String displayName
 });
 
 
@@ -74,12 +80,13 @@ class _$UserSettingsCopyWithImpl<$Res>
 
 /// Create a copy of UserSettings
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? isDarkMode = null,Object? languageCode = null,Object? sidebarCollapsed = null,Object? developerMode = null,Object? displayName = null,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? isDarkMode = null,Object? languageCode = null,Object? sidebarCollapsed = null,Object? accentColorValue = null,Object? developerMode = null,Object? displayName = null,}) {
   return _then(_self.copyWith(
 isDarkMode: null == isDarkMode ? _self.isDarkMode : isDarkMode // ignore: cast_nullable_to_non_nullable
 as bool,languageCode: null == languageCode ? _self.languageCode : languageCode // ignore: cast_nullable_to_non_nullable
 as String,sidebarCollapsed: null == sidebarCollapsed ? _self.sidebarCollapsed : sidebarCollapsed // ignore: cast_nullable_to_non_nullable
-as bool,developerMode: null == developerMode ? _self.developerMode : developerMode // ignore: cast_nullable_to_non_nullable
+as bool,accentColorValue: null == accentColorValue ? _self.accentColorValue : accentColorValue // ignore: cast_nullable_to_non_nullable
+as int,developerMode: null == developerMode ? _self.developerMode : developerMode // ignore: cast_nullable_to_non_nullable
 as bool,displayName: null == displayName ? _self.displayName : displayName // ignore: cast_nullable_to_non_nullable
 as String,
   ));
@@ -166,10 +173,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( bool isDarkMode,  String languageCode,  bool sidebarCollapsed,  bool developerMode,  String displayName)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( bool isDarkMode,  String languageCode,  bool sidebarCollapsed,  int accentColorValue,  bool developerMode,  String displayName)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _UserSettings() when $default != null:
-return $default(_that.isDarkMode,_that.languageCode,_that.sidebarCollapsed,_that.developerMode,_that.displayName);case _:
+return $default(_that.isDarkMode,_that.languageCode,_that.sidebarCollapsed,_that.accentColorValue,_that.developerMode,_that.displayName);case _:
   return orElse();
 
 }
@@ -187,10 +194,10 @@ return $default(_that.isDarkMode,_that.languageCode,_that.sidebarCollapsed,_that
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( bool isDarkMode,  String languageCode,  bool sidebarCollapsed,  bool developerMode,  String displayName)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( bool isDarkMode,  String languageCode,  bool sidebarCollapsed,  int accentColorValue,  bool developerMode,  String displayName)  $default,) {final _that = this;
 switch (_that) {
 case _UserSettings():
-return $default(_that.isDarkMode,_that.languageCode,_that.sidebarCollapsed,_that.developerMode,_that.displayName);case _:
+return $default(_that.isDarkMode,_that.languageCode,_that.sidebarCollapsed,_that.accentColorValue,_that.developerMode,_that.displayName);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -207,10 +214,10 @@ return $default(_that.isDarkMode,_that.languageCode,_that.sidebarCollapsed,_that
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( bool isDarkMode,  String languageCode,  bool sidebarCollapsed,  bool developerMode,  String displayName)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( bool isDarkMode,  String languageCode,  bool sidebarCollapsed,  int accentColorValue,  bool developerMode,  String displayName)?  $default,) {final _that = this;
 switch (_that) {
 case _UserSettings() when $default != null:
-return $default(_that.isDarkMode,_that.languageCode,_that.sidebarCollapsed,_that.developerMode,_that.displayName);case _:
+return $default(_that.isDarkMode,_that.languageCode,_that.sidebarCollapsed,_that.accentColorValue,_that.developerMode,_that.displayName);case _:
   return null;
 
 }
@@ -222,7 +229,7 @@ return $default(_that.isDarkMode,_that.languageCode,_that.sidebarCollapsed,_that
 @JsonSerializable()
 
 class _UserSettings implements UserSettings {
-  const _UserSettings({this.isDarkMode = false, this.languageCode = 'en', this.sidebarCollapsed = false, this.developerMode = false, this.displayName = ''});
+  const _UserSettings({this.isDarkMode = false, this.languageCode = 'en', this.sidebarCollapsed = false, this.accentColorValue = 0xFF3D5AFE, this.developerMode = false, this.displayName = ''});
   factory _UserSettings.fromJson(Map<String, dynamic> json) => _$UserSettingsFromJson(json);
 
 /// Whether the app uses the dark Material 3 color scheme.
@@ -231,6 +238,13 @@ class _UserSettings implements UserSettings {
 @override@JsonKey() final  String languageCode;
 /// Whether the user manually collapsed the navigation sidebar.
 @override@JsonKey() final  bool sidebarCollapsed;
+/// The accent (seed) color as a 32-bit ARGB integer.
+///
+/// The whole Material 3 palette is derived from this single color via
+/// `ColorScheme.fromSeed` (see `AppTheme`), for both light and dark mode.
+/// Stored as an int so it serializes cleanly to JSON / Appwrite; the
+/// default matches the template's original blue seed.
+@override@JsonKey() final  int accentColorValue;
 /// Whether developer mode is enabled.
 ///
 /// Developer mode reveals the "Logs" entry in the sidebar so the user
@@ -253,16 +267,16 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _UserSettings&&(identical(other.isDarkMode, isDarkMode) || other.isDarkMode == isDarkMode)&&(identical(other.languageCode, languageCode) || other.languageCode == languageCode)&&(identical(other.sidebarCollapsed, sidebarCollapsed) || other.sidebarCollapsed == sidebarCollapsed)&&(identical(other.developerMode, developerMode) || other.developerMode == developerMode)&&(identical(other.displayName, displayName) || other.displayName == displayName));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _UserSettings&&(identical(other.isDarkMode, isDarkMode) || other.isDarkMode == isDarkMode)&&(identical(other.languageCode, languageCode) || other.languageCode == languageCode)&&(identical(other.sidebarCollapsed, sidebarCollapsed) || other.sidebarCollapsed == sidebarCollapsed)&&(identical(other.accentColorValue, accentColorValue) || other.accentColorValue == accentColorValue)&&(identical(other.developerMode, developerMode) || other.developerMode == developerMode)&&(identical(other.displayName, displayName) || other.displayName == displayName));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,isDarkMode,languageCode,sidebarCollapsed,developerMode,displayName);
+int get hashCode => Object.hash(runtimeType,isDarkMode,languageCode,sidebarCollapsed,accentColorValue,developerMode,displayName);
 
 @override
 String toString() {
-  return 'UserSettings(isDarkMode: $isDarkMode, languageCode: $languageCode, sidebarCollapsed: $sidebarCollapsed, developerMode: $developerMode, displayName: $displayName)';
+  return 'UserSettings(isDarkMode: $isDarkMode, languageCode: $languageCode, sidebarCollapsed: $sidebarCollapsed, accentColorValue: $accentColorValue, developerMode: $developerMode, displayName: $displayName)';
 }
 
 
@@ -273,7 +287,7 @@ abstract mixin class _$UserSettingsCopyWith<$Res> implements $UserSettingsCopyWi
   factory _$UserSettingsCopyWith(_UserSettings value, $Res Function(_UserSettings) _then) = __$UserSettingsCopyWithImpl;
 @override @useResult
 $Res call({
- bool isDarkMode, String languageCode, bool sidebarCollapsed, bool developerMode, String displayName
+ bool isDarkMode, String languageCode, bool sidebarCollapsed, int accentColorValue, bool developerMode, String displayName
 });
 
 
@@ -290,12 +304,13 @@ class __$UserSettingsCopyWithImpl<$Res>
 
 /// Create a copy of UserSettings
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? isDarkMode = null,Object? languageCode = null,Object? sidebarCollapsed = null,Object? developerMode = null,Object? displayName = null,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? isDarkMode = null,Object? languageCode = null,Object? sidebarCollapsed = null,Object? accentColorValue = null,Object? developerMode = null,Object? displayName = null,}) {
   return _then(_UserSettings(
 isDarkMode: null == isDarkMode ? _self.isDarkMode : isDarkMode // ignore: cast_nullable_to_non_nullable
 as bool,languageCode: null == languageCode ? _self.languageCode : languageCode // ignore: cast_nullable_to_non_nullable
 as String,sidebarCollapsed: null == sidebarCollapsed ? _self.sidebarCollapsed : sidebarCollapsed // ignore: cast_nullable_to_non_nullable
-as bool,developerMode: null == developerMode ? _self.developerMode : developerMode // ignore: cast_nullable_to_non_nullable
+as bool,accentColorValue: null == accentColorValue ? _self.accentColorValue : accentColorValue // ignore: cast_nullable_to_non_nullable
+as int,developerMode: null == developerMode ? _self.developerMode : developerMode // ignore: cast_nullable_to_non_nullable
 as bool,displayName: null == displayName ? _self.displayName : displayName // ignore: cast_nullable_to_non_nullable
 as String,
   ));

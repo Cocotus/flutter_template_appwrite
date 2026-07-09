@@ -26,6 +26,14 @@ abstract class UserSettings with _$UserSettings {
     /// Whether the user manually collapsed the navigation sidebar.
     @Default(false) bool sidebarCollapsed,
 
+    /// The accent (seed) color as a 32-bit ARGB integer.
+    ///
+    /// The whole Material 3 palette is derived from this single color via
+    /// `ColorScheme.fromSeed` (see `AppTheme`), for both light and dark mode.
+    /// Stored as an int so it serializes cleanly to JSON / Appwrite; the
+    /// default matches the template's original blue seed.
+    @Default(0xFF3D5AFE) int accentColorValue,
+
     /// Whether developer mode is enabled.
     ///
     /// Developer mode reveals the "Logs" entry in the sidebar so the user

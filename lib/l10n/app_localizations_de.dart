@@ -63,6 +63,9 @@ class AppLocalizationsDe extends AppLocalizations {
   String get darkMode => 'Dunkler Modus';
 
   @override
+  String get accentColor => 'Akzentfarbe';
+
+  @override
   String get version => 'Version';
 
   @override

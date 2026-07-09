@@ -21,6 +21,10 @@
   "theme": "Theme",
   "language": "Language",
   "darkMode": "Dark mode",
+  "accentColor": "Accent color",
+  "@accentColor": {
+    "description": "Settings label for the seed color picker"
+  },
   "version": "Version",
   "logs": "Logs",
   "developerMode": "Developer mode",

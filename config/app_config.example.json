@@ -5,5 +5,6 @@
   "APPWRITE_USER_SETTINGS_TABLE_ID": "user_settings",
   "APPWRITE_LOGS_TABLE_ID": "logs",
   "PASSWORD_RECOVERY_URL": "http://localhost:8080/reset-password",
-  "REMOTE_LOGGING_ENABLED": false
+  "REMOTE_LOGGING_ENABLED": false,
+  "DEMO_MODE_ALLOWED": false
 }

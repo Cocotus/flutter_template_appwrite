@@ -18,6 +18,7 @@
   "theme": "Design",
   "language": "Sprache",
   "darkMode": "Dunkler Modus",
+  "accentColor": "Akzentfarbe",
   "version": "Version",
   "logs": "Logs",
   "developerMode": "Entwicklermodus",

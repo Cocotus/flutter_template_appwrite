@@ -10,6 +10,8 @@ import 'package:flutter_template_appwrite/services/theme_service.dart';
 import 'package:flutter_template_appwrite/utils/auth_error_mapper.dart';
 import 'package:flutter_template_appwrite/views/login/login_controller.dart';
 import 'package:flutter_template_appwrite/widgets/app_snackbar.dart';
+import 'package:flutter_template_appwrite/widgets/forms/app_password_field.dart';
+import 'package:flutter_template_appwrite/widgets/forms/app_text_field.dart';
 
 /// Login and registration screen.
 ///
@@ -40,11 +42,28 @@ class LoginView extends HookConsumerWidget {
     final TextEditingController nameController = useTextEditingController();
 
     // Pure UI-only state (not business logic), so it lives in the widget.
-    final ValueNotifier<bool> isPasswordVisible = useState<bool>(false);
+    // (Password visibility is now owned by each AppPasswordField itself.)
     final ValueNotifier<bool> isRegisterMode = useState<bool>(false);
 
     final AsyncValue<void> authState = ref.watch(loginControllerProvider);
     final bool isDarkMode = ref.watch(themeServiceProvider);
+    final bool isDemoMode = ref.watch(demoModeProvider);
+
+    // Keep the form in sync with demo mode. This must be an effect, not a
+    // one-off in the switch's onChanged: flipping demo mode rebuilds the
+    // auth state, which briefly bounces the router (login -> splash -> login)
+    // and REMOUNTS this view — a value set once in onChanged would be lost.
+    // Keying on [isDemoMode] re-applies it on every (re)mount.
+    useEffect(() {
+      if (isDemoMode) {
+        emailController.text = demoEmail;
+        passwordController.text = demoPassword;
+      } else {
+        emailController.clear();
+        passwordController.clear();
+      }
+      return null;
+    }, <Object?>[isDemoMode]);
 
     // React to success/failure without passing BuildContext into the
     // controller. Navigation on success is handled by the router's auth
@@ -80,9 +99,9 @@ class LoginView extends HookConsumerWidget {
                       passwordController: passwordController,
                       confirmController: confirmController,
                       nameController: nameController,
-                      isPasswordVisible: isPasswordVisible,
                       isRegisterMode: isRegisterMode,
                       authState: authState,
+                      isDemoMode: isDemoMode,
                     ),
                   ),
                 ),
@@ -106,9 +125,9 @@ class LoginView extends HookConsumerWidget {
     required TextEditingController passwordController,
     required TextEditingController confirmController,
     required TextEditingController nameController,
-    required ValueNotifier<bool> isPasswordVisible,
     required ValueNotifier<bool> isRegisterMode,
     required AsyncValue<void> authState,
+    required bool isDemoMode,
   }) {
     return Column(
       mainAxisSize: MainAxisSize.min,
@@ -129,42 +148,36 @@ class LoginView extends HookConsumerWidget {
           style: Theme.of(context).textTheme.headlineSmall,
         ),
         const SizedBox(height: 24),
-        TextField(
+        AppTextField(
           controller: emailController,
+          label: localizations.email,
+          icon: Icons.mail_outline,
           autofocus: true,
           keyboardType: TextInputType.emailAddress,
           textInputAction: TextInputAction.next,
-          decoration: InputDecoration(
-            labelText: localizations.email,
-            prefixIcon: const Icon(Icons.mail_outline),
-          ),
         ),
         if (isRegisterMode.value) ...<Widget>[
           const SizedBox(height: 16),
-          TextField(
+          AppTextField(
             controller: nameController,
+            // The display name is optional on registration.
+            label: localizations.displayName,
+            icon: Icons.badge_outlined,
             textInputAction: TextInputAction.next,
-            decoration: InputDecoration(
-              // The display name is optional on registration.
-              labelText: localizations.displayName,
-              prefixIcon: const Icon(Icons.badge_outlined),
-            ),
           ),
         ],
         const SizedBox(height: 16),
-        _buildPasswordField(
-          localizations: localizations,
+        AppPasswordField(
           controller: passwordController,
-          isPasswordVisible: isPasswordVisible,
-          labelText: localizations.password,
+          label: localizations.password,
+          textInputAction: TextInputAction.done,
         ),
         if (isRegisterMode.value) ...<Widget>[
           const SizedBox(height: 16),
-          _buildPasswordField(
-            localizations: localizations,
+          AppPasswordField(
             controller: confirmController,
-            isPasswordVisible: isPasswordVisible,
-            labelText: localizations.confirmPassword,
+            label: localizations.confirmPassword,
+            textInputAction: TextInputAction.done,
           ),
         ],
         const SizedBox(height: 24),
@@ -195,8 +208,7 @@ class LoginView extends HookConsumerWidget {
           _buildDemoModeSwitch(
             ref: ref,
             localizations: localizations,
-            emailController: emailController,
-            passwordController: passwordController,
+            isDemoMode: isDemoMode,
             isRegisterMode: isRegisterMode,
           ),
       ],
@@ -204,19 +216,15 @@ class LoginView extends HookConsumerWidget {
   }
 
   // Lets the user explore the app with fake data and no real backend.
-  // Switching it on swaps the auth/database services for in-memory fakes and
-  // PRE-FILLS the login form: the user then presses Login exactly as they
-  // would in a real sign-in, and the fake auth service accepts it. Switching
-  // it off restores the real Appwrite services and clears the form.
+  // Switching it on swaps the auth/database services for in-memory fakes; the
+  // form is then pre-filled by the `useEffect` in [build] so the user presses
+  // Login exactly as in a real sign-in, and the fake auth service accepts it.
   Widget _buildDemoModeSwitch({
     required WidgetRef ref,
     required AppLocalizations localizations,
-    required TextEditingController emailController,
-    required TextEditingController passwordController,
+    required bool isDemoMode,
     required ValueNotifier<bool> isRegisterMode,
   }) {
-    final bool isDemoMode = ref.watch(demoModeProvider);
-
     return Padding(
       padding: const EdgeInsets.only(top: 8),
       child: SwitchListTile(
@@ -226,51 +234,12 @@ class LoginView extends HookConsumerWidget {
         subtitle: Text(localizations.demoModeDescription),
         value: isDemoMode,
         onChanged: (bool enabled) async {
-          await ref.read(demoModeProvider.notifier).set(enabled: enabled);
+          // Demo mode logs in via the normal login form, never registration.
           if (enabled) {
-            // Present the normal login form, pre-filled with demo credentials.
             isRegisterMode.value = false;
-            emailController.text = demoEmail;
-            passwordController.text = demoPassword;
-          } else {
-            emailController.clear();
-            passwordController.clear();
           }
+          await ref.read(demoModeProvider.notifier).set(enabled: enabled);
         },
-      ),
-    );
-  }
-
-  Widget _buildPasswordField({
-    required AppLocalizations localizations,
-    required TextEditingController controller,
-    required ValueNotifier<bool> isPasswordVisible,
-    required String labelText,
-  }) {
-    final IconData visibilityIcon;
-    final String visibilityTooltip;
-    if (isPasswordVisible.value) {
-      visibilityIcon = Icons.visibility_off;
-      visibilityTooltip = localizations.hidePassword;
-    } else {
-      visibilityIcon = Icons.visibility;
-      visibilityTooltip = localizations.showPassword;
-    }
-
-    return TextField(
-      controller: controller,
-      obscureText: isPasswordVisible.value == false,
-      textInputAction: TextInputAction.done,
-      decoration: InputDecoration(
-        labelText: labelText,
-        prefixIcon: const Icon(Icons.lock_outline),
-        suffixIcon: IconButton(
-          icon: Icon(visibilityIcon),
-          tooltip: visibilityTooltip,
-          onPressed: () {
-            isPasswordVisible.value = !isPasswordVisible.value;
-          },
-        ),
       ),
     );
   }

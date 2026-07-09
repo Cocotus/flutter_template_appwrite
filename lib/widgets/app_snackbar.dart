@@ -11,9 +11,10 @@ void showSnackbar(BuildContext context, String message) {
     behavior: SnackBarBehavior.floating,
   );
 
-  ScaffoldMessenger.of(context)
-    ..hideCurrentSnackBar()
-    ..showSnackBar(snackBar);
+  // Replace any snackbar currently on screen with this one.
+  final ScaffoldMessengerState messenger = ScaffoldMessenger.of(context);
+  messenger.hideCurrentSnackBar();
+  messenger.showSnackBar(snackBar);
 }
 
 /// Shows a floating snackbar styled as an error.
@@ -29,7 +30,8 @@ void showErrorSnackbar(BuildContext context, String message) {
     behavior: SnackBarBehavior.floating,
   );
 
-  ScaffoldMessenger.of(context)
-    ..hideCurrentSnackBar()
-    ..showSnackBar(snackBar);
+  // Replace any snackbar currently on screen with this one.
+  final ScaffoldMessengerState messenger = ScaffoldMessenger.of(context);
+  messenger.hideCurrentSnackBar();
+  messenger.showSnackBar(snackBar);
 }

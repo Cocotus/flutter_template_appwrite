@@ -6,8 +6,10 @@ import 'package:flutter_template_appwrite/l10n/app_localizations.dart';
 import 'package:flutter_template_appwrite/models/user_settings.dart';
 import 'package:flutter_template_appwrite/services/locale_service.dart';
 import 'package:flutter_template_appwrite/services/user_settings_service.dart';
+import 'package:flutter_template_appwrite/theme/accent_colors.dart';
 import 'package:flutter_template_appwrite/views/settings/settings_controller.dart';
 import 'package:flutter_template_appwrite/widgets/app_snackbar.dart';
+import 'package:flutter_template_appwrite/widgets/forms/app_text_field.dart';
 
 /// Settings page: theme, language, developer mode and display name.
 ///
@@ -62,6 +64,13 @@ class SettingsView extends HookConsumerWidget {
                 controller: controller,
                 isSaving: isSaving,
               ),
+              _buildAccentColorPicker(
+                context: context,
+                localizations: localizations,
+                settings: settings,
+                controller: controller,
+                isSaving: isSaving,
+              ),
               _buildLanguageDropdown(
                 localizations: localizations,
                 settings: settings,
@@ -103,6 +112,75 @@ class SettingsView extends HookConsumerWidget {
           : (bool newValue) {
               controller.setDarkMode(newValue);
             },
+    );
+  }
+
+  // A row of tappable color swatches; the active one gets a check mark.
+  // Picking one re-seeds the whole Material 3 palette (see AppTheme).
+  Widget _buildAccentColorPicker({
+    required BuildContext context,
+    required AppLocalizations localizations,
+    required UserSettings settings,
+    required SettingsController controller,
+    required bool isSaving,
+  }) {
+    return ListTile(
+      leading: const Icon(Icons.palette_outlined),
+      title: Text(localizations.accentColor),
+      subtitle: Padding(
+        padding: const EdgeInsets.only(top: 12),
+        child: Wrap(
+          spacing: 12,
+          runSpacing: 12,
+          children: <Widget>[
+            for (final AccentColor preset in accentColorPresets)
+              _buildColorSwatch(
+                context: context,
+                preset: preset,
+                isSelected: preset.value == settings.accentColorValue,
+                onTap: isSaving
+                    ? null
+                    : () => controller.setAccentColor(preset.value),
+              ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildColorSwatch({
+    required BuildContext context,
+    required AccentColor preset,
+    required bool isSelected,
+    required VoidCallback? onTap,
+  }) {
+    // White or black check mark, whichever contrasts with the swatch.
+    final Color checkColor =
+        ThemeData.estimateBrightnessForColor(preset.color) == Brightness.dark
+            ? Colors.white
+            : Colors.black;
+
+    return Tooltip(
+      message: preset.name,
+      child: InkWell(
+        onTap: onTap,
+        customBorder: const CircleBorder(),
+        child: Container(
+          width: 40,
+          height: 40,
+          decoration: BoxDecoration(
+            color: preset.color,
+            shape: BoxShape.circle,
+            border: Border.all(
+              color: isSelected
+                  ? Theme.of(context).colorScheme.onSurface
+                  : Colors.transparent,
+              width: 2,
+            ),
+          ),
+          child: isSelected ? Icon(Icons.check, color: checkColor) : null,
+        ),
+      ),
     );
   }
 
@@ -163,13 +241,10 @@ class SettingsView extends HookConsumerWidget {
     return Row(
       children: <Widget>[
         Expanded(
-          child: TextField(
+          child: AppTextField(
             controller: displayNameController,
-            decoration: InputDecoration(
-              labelText: localizations.displayName,
-              prefixIcon: const Icon(Icons.badge_outlined),
-              border: const OutlineInputBorder(),
-            ),
+            label: localizations.displayName,
+            icon: Icons.badge_outlined,
           ),
         ),
         const SizedBox(width: 16),

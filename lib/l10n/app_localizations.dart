@@ -200,6 +200,12 @@ abstract class AppLocalizations {
   /// **'Dark mode'**
   String get darkMode;
 
+  /// Settings label for the seed color picker
+  ///
+  /// In en, this message translates to:
+  /// **'Accent color'**
+  String get accentColor;
+
   /// No description provided for @version.
   ///
   /// In en, this message translates to:

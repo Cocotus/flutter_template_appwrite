@@ -40,6 +40,17 @@ class SettingsController extends _$SettingsController {
     await _save(newSettings);
   }
 
+  /// Sets the accent (seed) color, given as a 32-bit ARGB integer.
+  ///
+  /// The whole Material 3 palette re-derives from this value in [App].
+  Future<void> setAccentColor(int accentColorValue) async {
+    final UserSettings currentSettings =
+        ref.read(userSettingsControllerProvider);
+    final UserSettings newSettings =
+        currentSettings.copyWith(accentColorValue: accentColorValue);
+    await _save(newSettings);
+  }
+
   /// Enables or disables developer mode (reveals the Logs sidebar entry).
   Future<void> setDeveloperMode(bool isDeveloperModeEnabled) async {
     final UserSettings currentSettings =

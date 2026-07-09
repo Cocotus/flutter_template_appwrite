@@ -19,10 +19,20 @@ class LogsView extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final AppLocalizations localizations = AppLocalizations.of(context)!;
     final Talker talker = ref.watch(loggerServiceProvider).talker;
+    final ColorScheme colorScheme = Theme.of(context).colorScheme;
 
     return TalkerScreen(
       talker: talker,
       appBarTitle: localizations.logs,
+      // Match the app's theme instead of Talker's default dark palette, so
+      // the log view fits light/dark mode and the chosen accent color. Only
+      // the surface/text/card colors are themed; the per-level log colors
+      // (error red, info blue, ...) keep Talker's defaults for readability.
+      theme: TalkerScreenTheme(
+        backgroundColor: colorScheme.surface,
+        textColor: colorScheme.onSurface,
+        cardColor: colorScheme.surfaceContainerHighest,
+      ),
       // The shell already provides the app-level chrome; TalkerScreen
       // brings its own AppBar with filter/actions, which is what we want
       // inside the content area.
