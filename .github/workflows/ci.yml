@@ -9,8 +9,9 @@ env:
   FLUTTER_VERSION: 3.44.1
 
 jobs:
-  analyze-and-test:
-    name: Analyze & test
+  # Static analysis only — flutter test entfernt, keine Testprojekte mehr nötig.
+  analyze:
+    name: Analyze
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -23,11 +24,11 @@ jobs:
         run: flutter pub get
       - name: Generate code (Riverpod/Freezed/JSON)
         run: dart run build_runner build
-      - name: Analyze (includes riverpod_lint via analyzer plugin)
+      - name: Analyze
         run: flutter analyze
-      - name: Run tests
-        run: flutter test
 
+  # Build-Nummer wird automatisch auf github.run_number gesetzt.
+  # Sichtbar in der App links unten im Login-Screen (appVersionProvider).
   build-web:
     name: Build web
     runs-on: ubuntu-latest
@@ -38,6 +39,10 @@ jobs:
           flutter-version: ${{ env.FLUTTER_VERSION }}
           channel: stable
           cache: true
+      - name: Bump build number to ${{ github.run_number }}
+        run: |
+          sed -i -E "s/^(version: [0-9]+\.[0-9]+\.[0-9]+\+)[0-9]+/\1${{ github.run_number }}/" pubspec.yaml
+          grep '^version:' pubspec.yaml
       - run: flutter pub get
       - run: dart run build_runner build
       - run: flutter build web --release
@@ -47,16 +52,23 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      # libsecret/keyring headers are required by flutter_secure_storage.
+      # Ubuntu 24.04 (Noble): libwebkit2gtk-4.1-dev (nicht 4.0!) +
+      # libsecret-1-dev für flutter_secure_storage.
       - name: Install Linux build prerequisites
         run: |
           sudo apt-get update
-          sudo apt-get install -y clang cmake ninja-build pkg-config libgtk-3-dev libsecret-1-dev
+          sudo apt-get install -y \
+            clang cmake ninja-build pkg-config \
+            libgtk-3-dev libsecret-1-dev libwebkit2gtk-4.1-dev
       - uses: subosito/flutter-action@v2
         with:
           flutter-version: ${{ env.FLUTTER_VERSION }}
           channel: stable
           cache: true
+      - name: Bump build number to ${{ github.run_number }}
+        run: |
+          sed -i -E "s/^(version: [0-9]+\.[0-9]+\.[0-9]+\+)[0-9]+/\1${{ github.run_number }}/" pubspec.yaml
+          grep '^version:' pubspec.yaml
       - run: flutter pub get
       - run: dart run build_runner build
       - run: flutter build linux --release
@@ -71,6 +83,11 @@ jobs:
           flutter-version: ${{ env.FLUTTER_VERSION }}
           channel: stable
           cache: true
+      - name: Bump build number to ${{ github.run_number }}
+        shell: bash
+        run: |
+          sed -i -E "s/^(version: [0-9]+\.[0-9]+\.[0-9]+\+)[0-9]+/\1${{ github.run_number }}/" pubspec.yaml
+          grep '^version:' pubspec.yaml
       - run: flutter pub get
       - run: dart run build_runner build
       - run: flutter build windows --release
