@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import 'package:flutter_template_appwrite/theme/app_theme.dart';
+
 /// A selectable accent color offered on the settings page.
 ///
 /// Each entry is just a seed color plus a human-readable [name] (shown as a
@@ -22,10 +24,11 @@ class AccentColor {
 /// The curated palette shown in the settings accent-color picker.
 ///
 /// Add or remove entries here to change the offered colors; nothing else in
-/// the app needs to change. The first entry's color also serves as the
-/// app-wide default seed (see `AppTheme.defaultSeedColor`).
+/// the app needs to change. The first entry uses [AppTheme.defaultSeedColor]
+/// as a single source of truth — change only that constant to retheme the
+/// whole app default.
 const List<AccentColor> accentColorPresets = <AccentColor>[
-  AccentColor(name: 'Blue', color: Color(0xFF3D5AFE)),
+  AccentColor(name: 'Blue', color: AppTheme.defaultSeedColor),
   AccentColor(name: 'Light Blue', color: Color(0xFF0288D1)),
   AccentColor(name: 'Cyan', color: Color(0xFF0097A7)),
   AccentColor(name: 'Teal', color: Color(0xFF009688)),
