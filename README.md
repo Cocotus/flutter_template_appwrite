@@ -37,7 +37,7 @@ The app itself is an *empty but complete* shell — login/register, home, settin
 ### Appwrite Cloud setup
 
 1. Create an account at [cloud.appwrite.io](https://cloud.appwrite.io) and create a **project**. Note the **Project ID** and the API **endpoint** (e.g. `https://cloud.appwrite.io/v1`).
-2. **Add a Web platform** to the project (Appwrite console → your project → *Overview* → *Add platform* → *Web*) and register the hostname you serve the app from — `localhost` for development. Without this, browser requests are blocked by CORS. Also register the hostname of your **password recovery URL** (see config below), otherwise `createRecovery` fails with a 400 error.
+2. **Add a Web platform** to the project (Appwrite console → your project → *Overview* → *Add platform* → *Web*) and register the hostname you serve the app from — `localhost` for development, your production domain later.
 3. Make sure **Email/Password** authentication is enabled (*Auth* → *Settings*).
 4. Create a **Database** (default ID used by this template: `app`).
 5. Inside it, create a **table** `user_settings` (TablesDB — databases → tables → rows):
@@ -51,10 +51,10 @@ The app itself is an *empty but complete* shell — login/register, home, settin
      | `developerMode`    | Boolean | no       | `false` |
      | `displayName`      | String  | no       | `""`    |
 
-   - **Permissions:** enable **row security**. On the table, grant **Create** to role **Users** (any logged-in user may create their own row). Do **not** grant table-level read/update/delete — the app sets **owner-only row permissions** (`read`/`update`/`delete` for `Role.user(userId)`) on every row it writes.
+   - **Permissions:** enable **row security**. On the table, grant **Create** to role **Users** (any logged-in user may create their own row). Do **not** grant table-level read/update/delete — those are granted at row level automatically when the user creates their row (the code sets the user as document owner).
    - The app stores **one row per user with the row ID equal to the Appwrite user ID**, so lookups are direct and there is exactly one settings row per user.
-6. *(Optional, for remote logging)* create a table `logs` with columns `level` (String), `message` (String), `stackTrace` (String, size ~16384), `timestamp` (String), `userId` (String), and grant **Create** to role **Users**. See [Logging](#4-logging--debugging).
-7. **Password reset (TODO for your app):** this template calls `account.createRecovery(...)` to send the reset email. The page that *completes* the reset (reads the `userId`/`secret` URL parameters and calls `account.updateRecovery(...)`) is intentionally not included — build it at the route your `PASSWORD_RECOVERY_URL` points to.
+6. *(Optional, for remote logging)* create a table `logs` with columns `level` (String), `message` (String), `stackTrace` (String, size ~16384), `timestamp` (String), `userId` (String), and grant **Create** to role **Users**.
+7. **Password reset (TODO for your app):** this template calls `account.createRecovery(...)` to send the reset email. The page that *completes* the reset (reads the `userId`/`secret` URL parameters and calls `account.updateRecovery(...)`) is **not implemented** in this template — you must add it. The `PASSWORD_RECOVERY_URL` in the config is a placeholder.
 
 ## 2. Configure the project
 
@@ -100,16 +100,16 @@ flutter run -d linux   --dart-define-from-file=config/app_config.json
 
 VS Code users: ready-made launch configurations are in `.vscode/launch.json`.
 
-First start shows the **login screen**: register a user (this creates the Appwrite account, logs in and writes the default settings row), then explore Settings → enable **Developer mode** to reveal the **Logs** view.
+First start shows the **login screen**: register a user (this creates the Appwrite account, logs in and writes the default settings row), then explore Settings → enable **Developer mode** to reveal the Logs view in the sidebar.
 
 ## 4. Logging & debugging
 
 All logging goes through **Talker** via `LoggerService` — never `print`/`debugPrint`:
 
 - Logs appear in the **console** *and* in the in-app **Logs view** (sidebar entry; visible when **developer mode** is enabled in Settings, always visible in debug builds).
-- **Riverpod** provider updates/failures are logged automatically (`TalkerRiverpodObserver`), as are **route changes** (`TalkerRouteObserver`) and **all uncaught errors** (`FlutterError.onError` + `PlatformDispatcher.onError`).
+- **Riverpod** provider updates/failures are logged automatically (`TalkerRiverpodObserver`), as are **route changes** (`TalkerRouteObserver`) and **all uncaught errors** (`FlutterError.onError` + `PlatformDispatcher.instance.onError`).
 - The auth flow emits example logs (attempt/success/failure) with **redacted emails** — never log secrets or PII.
-- **Remote logging (optional, off by default):** set `REMOTE_LOGGING_ENABLED` to `true` and create the `logs` table (see setup). Only `error`-level events are forwarded (`RemoteLogSink` → `AppwriteLogSink`). For real production crash monitoring, consider [Sentry](https://pub.dev/packages/sentry_flutter) (`sentry_flutter`) instead — deliberately not a default dependency.
+- **Remote logging (optional, off by default):** set `REMOTE_LOGGING_ENABLED` to `true` and create the `logs` table (see setup). Only `error`-level events are forwarded (`RemoteLogSink` → `Appwrite TablesDB`).
 
 ## 5. Regenerate icons / favicon
 
@@ -127,13 +127,13 @@ This regenerates the web favicon + manifest icons and the Windows `.ico`. Linux 
 flutter build web --release
 ```
 
-- **SPA fallback is required:** this app uses **path URLs** (`usePathUrlStrategy()`, e.g. `/login` instead of `/#/login`). Your static host must **rewrite all unknown paths to `index.html`**, otherwise refreshing or deep-linking any route returns 404. (Netlify: `/* /index.html 200` in `_redirects`; nginx: `try_files $uri /index.html;`; Firebase Hosting: `"rewrites": [{"source": "**", "destination": "/index.html"}]`.)
+- **SPA fallback is required:** this app uses **path URLs** (`usePathUrlStrategy()`, e.g. `/login` instead of `/#/login`). Your static host must **rewrite all unknown paths to `index.html`**, otherwise direct navigation and browser refresh break. Firebase Hosting, Netlify, Vercel do this by default with the right config file (see their docs).
 - **Renderer:** builds default to **CanvasKit**. You can opt into the WasmGC build with `flutter build web --wasm` (the old HTML renderer no longer exists).
 - Remember to register the production hostname as a Web platform in the Appwrite console.
 
 Windows/Linux release builds: `flutter build windows --release` / `flutter build linux --release` (CI builds all three — see `.github/workflows/ci.yml`).
 
-> **Windows note:** if your checkout lives in a deeply nested folder, MSBuild can fail with `MSB3491 … exceeds the maximum path limit` (260 chars, triggered by plugin build files). Clone the repo close to the drive root (e.g. `C:\dev\my_app`) or enable Windows long-path support.
+> **Windows note:** if your checkout lives in a deeply nested folder, MSBuild can fail with `MSB3491 … exceeds the maximum path limit` (260 chars, triggered by plugin build files). Clone the repo at a shorter path (e.g. `C:\dev\myapp`) or enable long path support: `reg add HKLM\SYSTEM\CurrentControlSet\Control\FileSystem /v LongPathsEnabled /t REG_DWORD /d 1`.
 
 ## 7. Project structure
 
@@ -161,18 +161,18 @@ lib/
 
 ## 8. Coding conventions
 
-> This template intentionally favors explicit, verbose, beginner-friendly Dart over concise expert-style code, follows the official Dart naming guidelines, and documents all public APIs, so an average/intermediate Flutter developer can read and extend it.
+> This template intentionally favors explicit, verbose, beginner-friendly Dart over concise expert-style code, follows the official Dart naming guidelines, and documents all public APIs, so an average Flutter developer can read, modify and learn from it without prior Riverpod/Freezed experience.
 
 Hard rules (enforced across the whole codebase):
 
-- **No `StatefulWidget` / `ConsumerStatefulWidget`.** `StatelessWidget` only for logic-free UI; anything with state uses `ConsumerWidget` or `HookConsumerWidget` plus a paired `@riverpod` controller (`xyz_view.dart` + `xyz_controller.dart`).
-- **`TextEditingController`s live in the view** via `useTextEditingController()` (auto-disposed by hooks); controllers receive **plain Strings only** and **never a `BuildContext`**. UI-only flags (e.g. password visibility) use `useState`.
+- **No `StatefulWidget` / `ConsumerStatefulWidget`.** `StatelessWidget` only for logic-free UI; anything with state uses `ConsumerWidget` or `HookConsumerWidget` plus a paired `@riverpod` controller.
+- **`TextEditingController`s live in the view** via `useTextEditingController()` (auto-disposed by hooks); controllers receive **plain Strings only** and **never a `BuildContext`**. UI-only flags (password visibility toggle, checkbox state) stay in the view as hooks; domain logic goes into the controller.
 - View logic lives in **controllers**, shared logic in **services**; controllers call services, **never the raw Appwrite client** — that keeps them mockable (see `test/fakes/`).
 - Long-lived services are `@Riverpod(keepAlive: true)`; everything else auto-disposes (Riverpod 3 default).
 - All models are **`@freezed`** with `fromJson`/`toJson`.
 - All async work is exposed as **`AsyncValue`**; views render it with the shared loading/error/empty widgets and react to results via `ref.listen` (snackbars, navigation).
 - **All logging via Talker** (`LoggerService`) — no `print`/`debugPrint`; log exceptions once, where they are handled, with context; **never log secrets or PII** (redact emails etc.).
-- **Style:** explicit types, block bodies over multi-step `=>`, `if`/`else` over nested ternaries, named intermediate variables over long call chains, `_buildXxx()` helpers for big widget trees, `///` docs on every public API, `lowerCamelCase` constants, `snake_case` file names.
+- **Style:** explicit types, block bodies over multi-step `=>`, `if`/`else` over nested ternaries, named intermediate variables over long call chains, `_buildXxx()` helpers for big widget trees, consistent newline placement (`trailing commas + dartfmt`).
 
 ### Documented deviations from common older guides
 
@@ -189,6 +189,304 @@ flutter test
 
 - `test/views/login_view_test.dart` — widget tests: form renders, register-mode toggle, password eye toggle.
 - `test/controllers/login_controller_test.dart` — controller tests against hand-written fakes (`test/fakes/fake_services.dart`) via provider overrides; no network involved.
+
+---
+
+## 10. Tutorial: Building your own app from this template
+
+This section walks you through transforming this empty shell into your own application — step by step. It's aimed at **intermediate Flutter developers** who want to use the template as a starting point for a tool, utility app, or small project.
+
+> **Reference implementation:** the [moru](https://github.com/Cocotus/moru) project is a real-world example built from this template.
+
+---
+
+### Step 0 — Prerequisites
+
+- Flutter SDK installed (Dart ≥ 3.12)
+- An editor (VS Code or Android Studio / IntelliJ)
+- Access to an [Appwrite Cloud](https://appwrite.io/) project (or local instance), if you use auth/database features
+
+---
+
+### Step 1 — Create your repository
+
+1. Create a new empty GitHub repository (e.g. `my-tool`).
+2. Clone this template locally:
+   ```bash
+   git clone https://github.com/Cocotus/flutter_template_appwrite my-tool
+   cd my-tool
+   ```
+3. Change the Git remote to your new repo:
+   ```bash
+   git remote set-url origin https://github.com/YOUR_USER/my-tool
+   git push -u origin main
+   ```
+
+---
+
+### Step 2 — Rename the app and package ID
+
+These references must be updated **everywhere** in the project:
+
+| File | What to change |
+|---|---|
+| `pubspec.yaml` | `name:` (e.g. `my_tool`) and `description:` |
+| `lib/` — all `import` statements | Package name in import paths (`flutter_template_appwrite` → `my_tool`) |
+| `android/app/build.gradle` | `applicationId` |
+| `windows/runner/Runner.rc` | `ProductName`, `FileDescription` |
+| `web/index.html` | `<title>` |
+| `web/manifest.json` | `"name"` and `"short_name"` |
+
+**Tip:** Use a global find & replace (`flutter_template_appwrite` → `my_tool`) across the entire project folder, then run:
+```bash
+flutter pub get
+```
+
+---
+
+### Step 3 — App title (window title / AppBar title)
+
+The title that appears in the AppBar and the OS window title comes from two places:
+
+1. **`lib/app.dart`** — where `MaterialApp.router` or `title:` is set.
+2. **Translation files** (see Step 5) — the title comes from the localization key `appTitle`.
+
+Update both ARB files:
+```jsonc
+// lib/l10n/app_en.arb
+"appTitle": "My Tool"
+
+// lib/l10n/app_de.arb
+"appTitle": "Mein Tool"
+```
+
+---
+
+### Step 4 — Replace the logo / app icon
+
+The template uses **a single source image** for all platform icons:
+
+```
+assets/images/logo.png   ← place your logo here (1024×1024 px, PNG)
+```
+
+Then run once:
+```bash
+dart run flutter_launcher_icons
+```
+
+This automatically regenerates all platform-specific icons (Windows `.ico`, Web `favicon.png`, etc.). Configuration is at the bottom of `pubspec.yaml` under `flutter_launcher_icons:`.
+
+**Note:** Linux desktop icons are not covered by this tool. For Linux, the icon must be set separately via a `.desktop` file during packaging.
+
+The logo image is also displayed in the app itself (e.g. splash screen or login page):
+```dart
+Image.asset('assets/images/logo.png')
+```
+
+---
+
+### Step 5 — Localization: adding new text strings
+
+All user-facing text belongs **in the translation files**, never as string literals in widget code.
+
+**Which files to edit?**
+- `lib/l10n/app_en.arb` — English texts (the template file)
+- `lib/l10n/app_de.arb` — German texts
+
+**Never edit** the `.dart` files in the `l10n` folder! `app_localizations.dart`, `app_localizations_de.dart`, and `app_localizations_en.dart` are **auto-generated** and overwritten on every build. They should ideally be added to `.gitignore`.
+
+**Example — adding a new text:**
+```jsonc
+// lib/l10n/app_en.arb
+{
+  "@@locale": "en",
+  "appTitle": "My Tool",
+  "patchButtonLabel": "Apply Patch",
+  "@patchButtonLabel": {
+    "description": "Label on the main patch action button"
+  },
+  "patchSuccess": "Patch applied successfully!",
+  "@patchSuccess": {}
+}
+```
+```jsonc
+// lib/l10n/app_de.arb
+{
+  "@@locale": "de",
+  "appTitle": "Mein Tool",
+  "patchButtonLabel": "Patch anwenden",
+  "patchSuccess": "Patch erfolgreich angewendet!"
+}
+```
+
+After editing, run `flutter pub get` (or just save — VS Code triggers the generation automatically). Use the texts in code:
+```dart
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+
+// Inside a build() method:
+final AppLocalizations l10n = AppLocalizations.of(context)!;
+Text(l10n.patchButtonLabel)
+```
+
+---
+
+### Step 6 — Change the default accent color
+
+The template starts with a blue shade as the default color. The **only place** you need to change is:
+
+```dart
+// lib/theme/app_theme.dart — around line 24
+static const Color defaultSeedColor = Color(0xFF3D5AFE); // ← your color here
+```
+
+This automatically derives the entire Material 3 color scheme (light, dark, sidebar, buttons, etc.) — you don't need to adjust anything else in the theme.
+
+**Tip:** The list of accent colors offered in Settings is in `lib/theme/accent_colors.dart`. The first entry should point to `AppTheme.defaultSeedColor`:
+```dart
+// Good: no duplicate color value
+AccentColor(name: 'My Color', color: AppTheme.defaultSeedColor),
+```
+
+---
+
+### Step 7 — Create a new view (page)
+
+A new page consists of at least two files:
+
+```
+lib/views/my_page/
+  my_page_view.dart       ← the widget (ConsumerWidget, no StatefulWidget)
+  my_page_controller.dart ← Riverpod notifier (optional, for custom logic)
+```
+
+**Example — minimal new view:**
+```dart
+// lib/views/patch/patch_view.dart
+import 'package:flutter/material.dart';
+import 'package:hooks_riverpod/hooks_riverpod.dart';
+
+class PatchView extends ConsumerWidget {
+  const PatchView({super.key});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    return Scaffold(
+      appBar: AppBar(title: const Text('Patch')),
+      body: const Center(child: Text('Patcher goes here')),
+    );
+  }
+}
+```
+
+**Then register in `lib/router/app_router.dart` (Step 8).**
+
+---
+
+### Step 8 — Add a new route with go_router
+
+All routes are defined centrally in `lib/router/app_router.dart`.
+
+**8a) Add a path constant** (in the `AppRoutes` class):
+```dart
+/// The main patcher page.
+static const String patch = '/patch';
+```
+
+**8b) Register the route in the router:**
+
+If the page should appear **inside the authenticated shell** (with sidebar):
+```dart
+// In the StatefulShellRoute.indexedStack list:
+_buildBranch(talker, AppRoutes.patch, const PatchView()),
+```
+
+If the page should appear **outside the shell** (e.g. a fullscreen dialog):
+```dart
+// Outside StatefulShellRoute, at the same level as GoRoute(path: AppRoutes.login):
+GoRoute(
+  path: AppRoutes.patch,
+  builder: (BuildContext context, GoRouterState state) {
+    return const PatchView();
+  },
+),
+```
+
+**8c) Navigate:**
+```dart
+// From anywhere in the code (no BuildContext passing needed):
+context.go(AppRoutes.patch);
+// or
+context.push(AppRoutes.patch);   // adds to the stack (back button works)
+```
+
+**8d) Sidebar navigation entry** (if shell route):
+The sidebar is defined in `lib/views/shell/app_shell.dart`. Add a new `NavigationRailDestination` entry there — **in the same order** as the `branches` list in the router.
+
+---
+
+### Step 9 — Configure the Appwrite backend
+
+If you use auth or database features:
+
+1. Create a project on [appwrite.io](https://appwrite.io/).
+2. Enter the endpoint and project ID in the config file:
+   ```
+   config/app_config.json   (or as named in the template)
+   ```
+3. For the web platform: add a web platform in Appwrite under *Platforms* with your domain (e.g. `localhost`).
+
+---
+
+### Step 10 — Run code generation
+
+After any change to `@freezed` models or `@riverpod` providers:
+```bash
+dart run build_runner build --delete-conflicting-outputs
+```
+
+During development, it's more convenient to run continuously (regenerates on save):
+```bash
+dart run build_runner watch --delete-conflicting-outputs
+```
+
+---
+
+### Checklist: New app from template
+
+- [ ] Package name globally replaced (`flutter_template_appwrite` → your name)
+- [ ] `pubspec.yaml`: `name` and `description` adjusted
+- [ ] `app_en.arb` and `app_de.arb`: `appTitle` set
+- [ ] `assets/images/logo.png` replaced (1024×1024 px)
+- [ ] `dart run flutter_launcher_icons` executed
+- [ ] `AppTheme.defaultSeedColor` in `app_theme.dart` adjusted
+- [ ] Default `AccentColor` entry in `accent_colors.dart` points to `AppTheme.defaultSeedColor`
+- [ ] New views and routes created
+- [ ] Appwrite credentials entered (if used)
+- [ ] Generated `app_localizations*.dart` files added to `.gitignore`
+- [ ] `dart run build_runner build` executed
+- [ ] `flutter analyze` passes without errors
+
+---
+
+### Common pitfalls
+
+#### Generated files in the l10n folder
+
+`lib/l10n/app_localizations.dart`, `app_localizations_de.dart`, and `app_localizations_en.dart` are **auto-generated** and should not be manually edited or permanently checked into Git. Only `app_en.arb` and `app_de.arb` are real source files.
+
+Recommendation — add to `.gitignore`:
+```
+lib/l10n/app_localizations.dart
+lib/l10n/app_localizations_de.dart
+lib/l10n/app_localizations_en.dart
+```
+
+#### Accent color: only change in one place
+
+The default color value (`0xFF3D5AFE`) exists in the template at two locations (`app_theme.dart` and `accent_colors.dart`) — that's redundant. When customizing, **keep both places in sync** until the template consolidates this.
+
+---
 
 ## License
 
