@@ -8,6 +8,8 @@ import 'package:flutter_template_appwrite/l10n/app_localizations.dart';
 import 'package:flutter_template_appwrite/models/user_settings.dart';
 import 'package:flutter_template_appwrite/services/demo_mode_service.dart';
 import 'package:flutter_template_appwrite/services/user_settings_service.dart';
+import 'package:flutter_template_appwrite/theme/app_theme.dart';
+import 'package:flutter_template_appwrite/views/profile/profile_controller.dart';
 import 'package:flutter_template_appwrite/widgets/user_avatar.dart';
 
 /// The URL opened by the "GitHub" link in the header.
@@ -68,7 +70,8 @@ class AppShell extends ConsumerWidget {
                 isToggleEnabled: isWideLayout,
                 isLogsVisible: isLogsVisible,
               ),
-              const VerticalDivider(width: 1, thickness: 1),
+              // No divider needed: the dark sidebar forms its own edge
+              // against the content area (see AppTheme.brandSurface).
               // The routed page content.
               Expanded(child: navigationShell),
             ],
@@ -112,27 +115,43 @@ class AppShell extends ConsumerWidget {
         ],
       ),
       actions: <Widget>[
-        TextButton(
+        _buildHeaderLink(
+          label: localizations.home,
           onPressed: () {
             navigationShell.goBranch(_homeBranchIndex);
           },
-          child: Text(localizations.home),
         ),
-        TextButton(
+        _buildHeaderLink(
+          label: localizations.help,
           onPressed: () {
             navigationShell.goBranch(_helpBranchIndex);
           },
-          child: Text(localizations.help),
         ),
-        TextButton(
+        _buildHeaderLink(
+          label: 'GitHub',
           onPressed: () {
             // Fire-and-forget: opening the browser needs no result.
             launchUrl(Uri.parse(githubUrl));
           },
-          child: const Text('GitHub'),
         ),
         const SizedBox(width: 8),
       ],
+    );
+  }
+
+  // A flat text link in the dark header bar. The explicit white foreground
+  // is needed because TextButton defaults to the accent color, which is
+  // unreadable on the navy brand surface.
+  Widget _buildHeaderLink({
+    required String label,
+    required VoidCallback onPressed,
+  }) {
+    return TextButton(
+      onPressed: onPressed,
+      style: TextButton.styleFrom(
+        foregroundColor: AppTheme.onBrandSurface,
+      ),
+      child: Text(label),
     );
   }
 
@@ -209,7 +228,64 @@ class AppShell extends ConsumerWidget {
         isExpanded: isExpanded,
         isToggleEnabled: isToggleEnabled,
       ),
+      // Pinned to the bottom of the rail via Expanded + Align.
+      trailing: _buildSidebarFooter(
+        context: context,
+        ref: ref,
+        localizations: localizations,
+        isExpanded: isExpanded,
+      ),
       destinations: destinations,
+    );
+  }
+
+  // Logout button pinned at the bottom of the sidebar. Reuses the profile
+  // controller's logout action so logging and error handling stay in one
+  // place; the router guard redirects to the login page on success.
+  Widget _buildSidebarFooter({
+    required BuildContext context,
+    required WidgetRef ref,
+    required AppLocalizations localizations,
+    required bool isExpanded,
+  }) {
+    final AsyncValue<void> logoutState = ref.watch(profileControllerProvider);
+    final bool isLoggingOut = logoutState.isLoading;
+
+    final VoidCallback? onLogoutPressed = isLoggingOut
+        ? null
+        : () {
+            ref.read(profileControllerProvider.notifier).logout();
+          };
+
+    // Expanded sidebar: full-width button with icon + label.
+    // Collapsed sidebar: icon-only button with a tooltip.
+    final Widget logoutButton;
+    if (isExpanded) {
+      logoutButton = TextButton.icon(
+        onPressed: onLogoutPressed,
+        style: TextButton.styleFrom(
+          foregroundColor: AppTheme.onBrandSurfaceMuted,
+        ),
+        icon: const Icon(Icons.logout),
+        label: Text(localizations.logout),
+      );
+    } else {
+      logoutButton = IconButton(
+        onPressed: onLogoutPressed,
+        tooltip: localizations.logout,
+        color: AppTheme.onBrandSurfaceMuted,
+        icon: const Icon(Icons.logout),
+      );
+    }
+
+    return Expanded(
+      child: Align(
+        alignment: Alignment.bottomCenter,
+        child: Padding(
+          padding: const EdgeInsets.only(bottom: 16),
+          child: logoutButton,
+        ),
+      ),
     );
   }
 
@@ -228,6 +304,9 @@ class AppShell extends ConsumerWidget {
         const SizedBox(height: 8),
         IconButton(
           icon: Icon(isExpanded ? Icons.menu_open : Icons.menu),
+          // Explicit white: the sidebar is navy in both theme modes.
+          color: AppTheme.onBrandSurface,
+          disabledColor: AppTheme.onBrandSurfaceMuted,
           tooltip: localizations.appTitle,
           // Disabled on narrow layouts where the rail is forced collapsed.
           onPressed: isToggleEnabled

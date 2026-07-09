@@ -160,16 +160,16 @@ class SettingsView extends HookConsumerWidget {
             ? Colors.white
             : Colors.black;
 
+    // Selected swatch: a ring around the circle with a small gap, so the
+    // color itself stays fully visible (nicer than a border on the swatch).
     return Tooltip(
       message: preset.name,
       child: InkWell(
         onTap: onTap,
         customBorder: const CircleBorder(),
         child: Container(
-          width: 40,
-          height: 40,
+          padding: const EdgeInsets.all(3),
           decoration: BoxDecoration(
-            color: preset.color,
             shape: BoxShape.circle,
             border: Border.all(
               color: isSelected
@@ -178,12 +178,24 @@ class SettingsView extends HookConsumerWidget {
               width: 2,
             ),
           ),
-          child: isSelected ? Icon(Icons.check, color: checkColor) : null,
+          child: Container(
+            width: 36,
+            height: 36,
+            decoration: BoxDecoration(
+              color: preset.color,
+              shape: BoxShape.circle,
+            ),
+            child: isSelected
+                ? Icon(Icons.check, size: 20, color: checkColor)
+                : null,
+          ),
         ),
       ),
     );
   }
 
+  // A modern segmented control instead of a dropdown — with only a handful
+  // of languages, all options stay visible and switching is one click.
   Widget _buildLanguageDropdown({
     required AppLocalizations localizations,
     required UserSettings settings,
@@ -193,22 +205,22 @@ class SettingsView extends HookConsumerWidget {
     return ListTile(
       leading: const Icon(Icons.language_outlined),
       title: Text(localizations.language),
-      trailing: DropdownButton<String>(
-        value: settings.languageCode,
-        onChanged: isSaving
-            ? null
-            : (String? newLanguageCode) {
-                if (newLanguageCode != null) {
-                  controller.setLanguageCode(newLanguageCode);
-                }
-              },
-        items: <DropdownMenuItem<String>>[
+      trailing: SegmentedButton<String>(
+        segments: <ButtonSegment<String>>[
           for (final String languageCode in supportedLanguageCodes)
-            DropdownMenuItem<String>(
+            ButtonSegment<String>(
               value: languageCode,
-              child: Text(_languageDisplayName(languageCode)),
+              label: Text(_languageDisplayName(languageCode)),
             ),
         ],
+        selected: <String>{settings.languageCode},
+        showSelectedIcon: false,
+        onSelectionChanged: isSaving
+            ? null
+            : (Set<String> newSelection) {
+                // Single-select mode: the set always holds exactly one code.
+                controller.setLanguageCode(newSelection.first);
+              },
       ),
     );
   }
