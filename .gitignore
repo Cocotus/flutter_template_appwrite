@@ -47,3 +47,9 @@ app.*.map.json
 # Local app configuration with real Appwrite project values (never commit).
 # Copy config/app_config.example.json to config/app_config.json instead.
 config/app_config.json
+
+# Generated localizations — do NOT edit manually; regenerated on every build.
+# Only app_en.arb and app_de.arb are real source files.
+lib/l10n/app_localizations.dart
+lib/l10n/app_localizations_de.dart
+lib/l10n/app_localizations_en.dart
