@@ -11,26 +11,33 @@ class LoadingIndicator extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Built as an explicit list instead of a collection-`if`/spread in the
+    // literal, so the optional message line reads as a plain statement.
+    final List<Widget> children = <Widget>[
+      // Rounded stroke cap + color come from progressIndicatorTheme.
+      const SizedBox(
+        width: 40,
+        height: 40,
+        child: CircularProgressIndicator(strokeWidth: 3.5),
+      ),
+    ];
+
+    if (message != null) {
+      children.add(const SizedBox(height: 16));
+      children.add(
+        Text(
+          message!,
+          style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                color: Theme.of(context).colorScheme.onSurfaceVariant,
+              ),
+        ),
+      );
+    }
+
     return Center(
       child: Column(
         mainAxisSize: MainAxisSize.min,
-        children: <Widget>[
-          // Rounded stroke cap + color come from progressIndicatorTheme.
-          const SizedBox(
-            width: 40,
-            height: 40,
-            child: CircularProgressIndicator(strokeWidth: 3.5),
-          ),
-          if (message != null) ...<Widget>[
-            const SizedBox(height: 16),
-            Text(
-              message!,
-              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                    color: Theme.of(context).colorScheme.onSurfaceVariant,
-                  ),
-            ),
-          ],
-        ],
+        children: children,
       ),
     );
   }

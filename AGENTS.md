@@ -74,8 +74,13 @@ erfordert, schreibe es auf die einfache Weise um und füge einen kurzen Kommenta
   explizite Anweisungen auf einer benannten `final`-Variable auf** (Beispiel unten).
 - ❌ Lange einzeilige Methodenketten (`list.where(...).map(...).toList()..sort()`).
   Zerlege sie in Schritte mit benannten Variablen.
-- ❌ Verschachtelte Ternäre, Spread-lastige Einzeiler, dichte Collection-`if`/`for`
-  in großen Widget-Bäumen.
+- ❌ **Spread-Operatoren (`...`) und Collection-`if`/`for` in Widget-Listen**
+  (`if (cond) ...<Widget>[a, b]`, `for (final x in xs) ...buildRow(x)`). Baue
+  stattdessen eine **`final List<Widget> children = [...]`-Variable explizit
+  per `if`/`for`-Block und `.add()`/`.addAll()`** auf und übergib sie an
+  `children:` (Beispiel unten). Gilt auch für Map/Set-Merges
+  (`<K,V>{...other, 'k': v}`) — per Schleife mit `.entries` kopieren.
+- ❌ Verschachtelte Ternäre, dichte Collection-`if`/`for` in großen Widget-Bäumen.
 - ❌ Übermäßige `extension`s, Records, Pattern-Matching oder brandneue Syntax, die
   nur aus Cleverness verwendet wird. Nutze ein modernes Feature nur, wenn es den
   Code für Nicht-Experten wirklich *einfacher* macht, und kommentiere es, falls es
@@ -114,6 +119,31 @@ ScaffoldMessenger.of(context)
 final ScaffoldMessengerState messenger = ScaffoldMessenger.of(context);
 messenger.hideCurrentSnackBar();
 messenger.showSnackBar(snackBar);
+```
+
+### Beispiel — Auflösen eines Spreads in einer Widget-Liste
+
+```dart
+// ❌ Spread + Collection-if (unklar, was am Ende in der Liste landet):
+return Column(
+  children: <Widget>[
+    const Icon(Icons.info),
+    if (message != null) ...<Widget>[
+      const SizedBox(height: 8),
+      Text(message),
+    ],
+  ],
+);
+
+// ✅ Explizite Liste, Schritt für Schritt aufgebaut:
+final List<Widget> children = <Widget>[
+  const Icon(Icons.info),
+];
+if (message != null) {
+  children.add(const SizedBox(height: 8));
+  children.add(Text(message));
+}
+return Column(children: children);
 ```
 
 ### Benennung & Dokumentation (offizieller Dart-Stil)
@@ -375,7 +405,8 @@ Bevorzugte Steuerungs-/Event-Verwaltung aus der UI:
 - ❌ Für neue Riverpod-Controller möglichst vermeiden (oder keepAlive in bestehenden
   Controllern nutzen!): `BuildContext` in Controllern/Services.
 - ❌ Einen rohen Backend-Client aus einem Controller aufrufen (geh über einen Service).
-- ❌ Cascade-Operatoren (`..`); mehrschrittige Arrow-Rumpf-Methoden; lange einzeilige
+- ❌ Cascade-Operatoren (`..`); Spread-Operatoren (`...`) und Collection-`if`/`for`
+  in Widget-/Map-Literalen; mehrschrittige Arrow-Rumpf-Methoden; lange einzeilige
   Ketten; verschachtelte Ternäre.
 - ❌ Fest verdrahtete Schriftgrößen/-stile an der Aufrufstelle; `ThemeData` inline in
   `app.dart` gebaut.

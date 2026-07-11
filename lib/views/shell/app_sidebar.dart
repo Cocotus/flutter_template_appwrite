@@ -147,10 +147,7 @@ class AppSidebar extends ConsumerWidget {
           Expanded(
             child: ListView(
               padding: const EdgeInsets.only(top: 4, bottom: 12),
-              children: <Widget>[
-                for (final _NavSection section in sections)
-                  ..._buildSection(context, section),
-              ],
+              children: _buildSections(context, sections),
             ),
           ),
           _buildUserCard(context, ref, localizations, settings),
@@ -220,6 +217,22 @@ class AppSidebar extends ConsumerWidget {
     );
   }
 
+  // Flattens every section's widgets into one list for the ListView, in
+  // order. Written as an explicit loop with `.addAll()` instead of a
+  // `for`-in with a spread (`...`), so the flattening step reads as a
+  // plain statement.
+  List<Widget> _buildSections(
+    BuildContext context,
+    List<_NavSection> sections,
+  ) {
+    final List<Widget> allChildren = <Widget>[];
+    for (final _NavSection section in sections) {
+      final List<Widget> sectionChildren = _buildSection(context, section);
+      allChildren.addAll(sectionChildren);
+    }
+    return allChildren;
+  }
+
   // A section caption (expanded) or a subtle divider (collapsed), followed
   // by the section's menu entries.
   List<Widget> _buildSection(BuildContext context, _NavSection section) {
@@ -271,6 +284,33 @@ class AppSidebar extends ConsumerWidget {
         ? Theme.of(context).colorScheme.onPrimary
         : AppTheme.onBrandSurfaceMuted;
 
+    // Built as an explicit list instead of a collection-`if`/spread in the
+    // literal, so the label-in-expanded-mode logic reads as a plain
+    // statement.
+    final List<Widget> rowChildren = <Widget>[
+      Icon(
+        isSelected ? item.selectedIcon : item.icon,
+        size: 20,
+        color: foreground,
+      ),
+    ];
+    if (isExpanded) {
+      rowChildren.add(const SizedBox(width: 12));
+      rowChildren.add(
+        Expanded(
+          child: Text(
+            item.label,
+            overflow: TextOverflow.ellipsis,
+            style: TextStyle(
+              color: foreground,
+              fontSize: 14,
+              fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
+            ),
+          ),
+        ),
+      );
+    }
+
     final Widget tile = Material(
       color: Colors.transparent,
       child: InkWell(
@@ -290,28 +330,7 @@ class AppSidebar extends ConsumerWidget {
             mainAxisAlignment: isExpanded
                 ? MainAxisAlignment.start
                 : MainAxisAlignment.center,
-            children: <Widget>[
-              Icon(
-                isSelected ? item.selectedIcon : item.icon,
-                size: 20,
-                color: foreground,
-              ),
-              if (isExpanded) ...<Widget>[
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Text(
-                    item.label,
-                    overflow: TextOverflow.ellipsis,
-                    style: TextStyle(
-                      color: foreground,
-                      fontSize: 14,
-                      fontWeight:
-                          isSelected ? FontWeight.w600 : FontWeight.w500,
-                    ),
-                  ),
-                ),
-              ],
-            ],
+            children: rowChildren,
           ),
         ),
       ),

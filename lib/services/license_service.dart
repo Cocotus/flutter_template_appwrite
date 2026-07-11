@@ -55,13 +55,18 @@ class LicenseService {
     required String email,
   }) {
     final Uri base = Uri.parse(AppConfig.premiumCheckoutUrl);
-    return base.replace(
-      queryParameters: <String, String>{
-        ...base.queryParameters,
-        'checkout[email]': email,
-        'checkout[custom][user_id]': userId,
-      },
-    );
+
+    // Start from the query parameters already present on the configured
+    // checkout URL, then add ours on top. Written as an explicit loop
+    // instead of a spread (`...`) so the merge step is easy to follow.
+    final Map<String, String> queryParameters = <String, String>{};
+    for (final MapEntry<String, String> entry in base.queryParameters.entries) {
+      queryParameters[entry.key] = entry.value;
+    }
+    queryParameters['checkout[email]'] = email;
+    queryParameters['checkout[custom][user_id]'] = userId;
+
+    return base.replace(queryParameters: queryParameters);
   }
 }
 

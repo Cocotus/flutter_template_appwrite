@@ -19,22 +19,29 @@ class ErrorDisplay extends StatelessWidget {
     final AppLocalizations localizations = AppLocalizations.of(context)!;
     final ColorScheme colorScheme = Theme.of(context).colorScheme;
 
+    // Built as an explicit list instead of a collection-`if`/spread in the
+    // literal, so the optional retry button reads as a plain statement.
+    final List<Widget> children = <Widget>[
+      Icon(Icons.error_outline, size: 48, color: colorScheme.error),
+      const SizedBox(height: 16),
+      Text(message, textAlign: TextAlign.center),
+    ];
+
+    if (onRetry != null) {
+      children.add(const SizedBox(height: 16));
+      children.add(
+        FilledButton.icon(
+          onPressed: onRetry,
+          icon: const Icon(Icons.refresh),
+          label: Text(localizations.retry),
+        ),
+      );
+    }
+
     return Center(
       child: Column(
         mainAxisSize: MainAxisSize.min,
-        children: <Widget>[
-          Icon(Icons.error_outline, size: 48, color: colorScheme.error),
-          const SizedBox(height: 16),
-          Text(message, textAlign: TextAlign.center),
-          if (onRetry != null) ...<Widget>[
-            const SizedBox(height: 16),
-            FilledButton.icon(
-              onPressed: onRetry,
-              icon: const Icon(Icons.refresh),
-              label: Text(localizations.retry),
-            ),
-          ],
-        ],
+        children: children,
       ),
     );
   }

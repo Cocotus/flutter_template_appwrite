@@ -103,6 +103,35 @@ class AppShell extends ConsumerWidget {
         currentIndex < titles.length ? titles[currentIndex] : '';
     final String? subtitle = currentIndex == 0 ? localizations.homeIntro : null;
 
+    // Built as an explicit list instead of a collection-`if`/spread in the
+    // literal below, so the demo badge reads as a plain statement.
+    final List<Widget> titleRowChildren = <Widget>[
+      Flexible(
+        child: Text(
+          title,
+          overflow: TextOverflow.ellipsis,
+          style: theme.textTheme.titleLarge?.copyWith(
+            fontWeight: FontWeight.w700,
+          ),
+        ),
+      ),
+    ];
+    // Unmissable reminder that the app is showing fake data.
+    if (isDemoMode) {
+      titleRowChildren.add(const SizedBox(width: 12));
+      titleRowChildren.add(
+        Chip(
+          label: Text(localizations.demoBadge),
+          visualDensity: VisualDensity.compact,
+          backgroundColor: scheme.tertiaryContainer,
+          labelStyle: TextStyle(
+            color: scheme.onTertiaryContainer,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+      );
+    }
+
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
       decoration: BoxDecoration(
@@ -119,32 +148,7 @@ class AppShell extends ConsumerWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: <Widget>[
-                Row(
-                  children: <Widget>[
-                    Flexible(
-                      child: Text(
-                        title,
-                        overflow: TextOverflow.ellipsis,
-                        style: theme.textTheme.titleLarge?.copyWith(
-                          fontWeight: FontWeight.w700,
-                        ),
-                      ),
-                    ),
-                    // Unmissable reminder that the app is showing fake data.
-                    if (isDemoMode) ...<Widget>[
-                      const SizedBox(width: 12),
-                      Chip(
-                        label: Text(localizations.demoBadge),
-                        visualDensity: VisualDensity.compact,
-                        backgroundColor: scheme.tertiaryContainer,
-                        labelStyle: TextStyle(
-                          color: scheme.onTertiaryContainer,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                    ],
-                  ],
-                ),
+                Row(children: titleRowChildren),
                 if (subtitle != null)
                   Text(
                     subtitle,

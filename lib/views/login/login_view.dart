@@ -141,93 +141,123 @@ class LoginView extends HookConsumerWidget {
     required bool isDemoMode,
     required bool isBackendUnreachable,
   }) {
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: <Widget>[
-        // Centered logo directly above the input controls.
-        Image.asset(
-          'assets/images/logo.png',
-          height: 96,
-          semanticLabel: localizations.appTitle,
-        ),
-        const SizedBox(height: 24),
-        if (isBackendUnreachable) ...<Widget>[
-          _buildOfflineHint(context, localizations),
-          const SizedBox(height: 16),
-        ],
-        Text(
-          isRegisterMode.value
-              ? localizations.register
-              : localizations.login,
-          textAlign: TextAlign.center,
-          style: Theme.of(context).textTheme.headlineSmall,
-        ),
-        const SizedBox(height: 24),
+    // Built up as an explicit list (instead of collection-`if`/spread
+    // syntax in the literal below) so the conditional sections read as
+    // plain, step-by-step statements.
+    final List<Widget> formChildren = <Widget>[
+      // Centered logo directly above the input controls.
+      Image.asset(
+        'assets/images/logo.png',
+        height: 96,
+        semanticLabel: localizations.appTitle,
+      ),
+      const SizedBox(height: 24),
+    ];
+
+    if (isBackendUnreachable) {
+      formChildren.add(_buildOfflineHint(context, localizations));
+      formChildren.add(const SizedBox(height: 16));
+    }
+
+    formChildren.add(
+      Text(
+        isRegisterMode.value ? localizations.register : localizations.login,
+        textAlign: TextAlign.center,
+        style: Theme.of(context).textTheme.headlineSmall,
+      ),
+    );
+    formChildren.add(const SizedBox(height: 24));
+    formChildren.add(
+      AppTextField(
+        controller: emailController,
+        label: localizations.email,
+        icon: Icons.mail_outline,
+        autofocus: true,
+        keyboardType: TextInputType.emailAddress,
+        textInputAction: TextInputAction.next,
+      ),
+    );
+
+    if (isRegisterMode.value) {
+      formChildren.add(const SizedBox(height: 16));
+      formChildren.add(
         AppTextField(
-          controller: emailController,
-          label: localizations.email,
-          icon: Icons.mail_outline,
-          autofocus: true,
-          keyboardType: TextInputType.emailAddress,
+          controller: nameController,
+          // The display name is optional on registration.
+          label: localizations.displayName,
+          icon: Icons.badge_outlined,
           textInputAction: TextInputAction.next,
         ),
-        if (isRegisterMode.value) ...<Widget>[
-          const SizedBox(height: 16),
-          AppTextField(
-            controller: nameController,
-            // The display name is optional on registration.
-            label: localizations.displayName,
-            icon: Icons.badge_outlined,
-            textInputAction: TextInputAction.next,
-          ),
-        ],
-        const SizedBox(height: 16),
+      );
+    }
+
+    formChildren.add(const SizedBox(height: 16));
+    formChildren.add(
+      AppPasswordField(
+        controller: passwordController,
+        label: localizations.password,
+        textInputAction: TextInputAction.done,
+      ),
+    );
+
+    if (isRegisterMode.value) {
+      formChildren.add(const SizedBox(height: 16));
+      formChildren.add(
         AppPasswordField(
-          controller: passwordController,
-          label: localizations.password,
+          controller: confirmController,
+          label: localizations.confirmPassword,
           textInputAction: TextInputAction.done,
         ),
-        if (isRegisterMode.value) ...<Widget>[
-          const SizedBox(height: 16),
-          AppPasswordField(
-            controller: confirmController,
-            label: localizations.confirmPassword,
-            textInputAction: TextInputAction.done,
-          ),
-        ],
-        const SizedBox(height: 24),
-        _buildSubmitButton(
+      );
+    }
+
+    formChildren.add(const SizedBox(height: 24));
+    formChildren.add(
+      _buildSubmitButton(
+        context: context,
+        ref: ref,
+        localizations: localizations,
+        emailController: emailController,
+        passwordController: passwordController,
+        confirmController: confirmController,
+        nameController: nameController,
+        isRegisterMode: isRegisterMode,
+        authState: authState,
+      ),
+    );
+    formChildren.add(const SizedBox(height: 8));
+
+    if (isRegisterMode.value == false) {
+      formChildren.add(
+        _buildForgotPasswordButton(
           context: context,
           ref: ref,
           localizations: localizations,
           emailController: emailController,
-          passwordController: passwordController,
-          confirmController: confirmController,
-          nameController: nameController,
-          isRegisterMode: isRegisterMode,
-          authState: authState,
         ),
-        const SizedBox(height: 8),
-        if (isRegisterMode.value == false)
-          _buildForgotPasswordButton(
-            context: context,
-            ref: ref,
-            localizations: localizations,
-            emailController: emailController,
-          ),
-        _buildToggleModeButton(localizations, isRegisterMode),
-        // Only rendered in builds that allow demo mode (debug, or a build
-        // compiled with --dart-define=DEMO_MODE_ALLOWED=true). In production
-        // it is absent entirely.
-        if (demoModeIsAllowed)
-          _buildDemoModeSwitch(
-            ref: ref,
-            localizations: localizations,
-            isDemoMode: isDemoMode,
-            isRegisterMode: isRegisterMode,
-          ),
-      ],
+      );
+    }
+
+    formChildren.add(_buildToggleModeButton(localizations, isRegisterMode));
+
+    // Only rendered in builds that allow demo mode (debug, or a build
+    // compiled with --dart-define=DEMO_MODE_ALLOWED=true). In production
+    // it is absent entirely.
+    if (demoModeIsAllowed) {
+      formChildren.add(
+        _buildDemoModeSwitch(
+          ref: ref,
+          localizations: localizations,
+          isDemoMode: isDemoMode,
+          isRegisterMode: isRegisterMode,
+        ),
+      );
+    }
+
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: formChildren,
     );
   }
 
