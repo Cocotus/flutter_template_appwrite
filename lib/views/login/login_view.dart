@@ -4,13 +4,16 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 
 import 'package:flutter_template_appwrite/l10n/app_localizations.dart';
 import 'package:flutter_template_appwrite/services/app_version_service.dart';
+import 'package:flutter_template_appwrite/services/auth_service.dart';
 import 'package:flutter_template_appwrite/services/demo/demo_data.dart';
 import 'package:flutter_template_appwrite/services/demo_mode_service.dart';
 import 'package:flutter_template_appwrite/services/theme_service.dart';
 import 'package:flutter_template_appwrite/utils/auth_error_mapper.dart';
 import 'package:flutter_template_appwrite/views/login/login_controller.dart';
 import 'package:flutter_template_appwrite/widgets/app_snackbar.dart';
+import 'package:flutter_template_appwrite/widgets/buttons/app_buttons.dart';
 import 'package:flutter_template_appwrite/widgets/forms/app_password_field.dart';
+import 'package:flutter_template_appwrite/widgets/forms/app_switch_tile.dart';
 import 'package:flutter_template_appwrite/widgets/forms/app_text_field.dart';
 
 /// Login and registration screen.
@@ -48,6 +51,13 @@ class LoginView extends HookConsumerWidget {
     final AsyncValue<void> authState = ref.watch(loginControllerProvider);
     final bool isDarkMode = ref.watch(themeServiceProvider);
     final bool isDemoMode = ref.watch(demoModeProvider);
+
+    // The startup session check only ends in an error state when the
+    // Appwrite backend could not be reached at all (a plain "no session"
+    // is a regular 401 and yields data:null). Used for the offline hint —
+    // the app stays usable, e.g. via demo mode.
+    final bool isBackendUnreachable =
+        ref.watch(currentUserProvider).hasError;
 
     // Keep the form in sync with demo mode. This must be an effect, not a
     // one-off in the switch's onChanged: flipping demo mode rebuilds the
@@ -102,6 +112,7 @@ class LoginView extends HookConsumerWidget {
                       isRegisterMode: isRegisterMode,
                       authState: authState,
                       isDemoMode: isDemoMode,
+                      isBackendUnreachable: isBackendUnreachable,
                     ),
                   ),
                 ),
@@ -128,6 +139,7 @@ class LoginView extends HookConsumerWidget {
     required ValueNotifier<bool> isRegisterMode,
     required AsyncValue<void> authState,
     required bool isDemoMode,
+    required bool isBackendUnreachable,
   }) {
     return Column(
       mainAxisSize: MainAxisSize.min,
@@ -140,6 +152,10 @@ class LoginView extends HookConsumerWidget {
           semanticLabel: localizations.appTitle,
         ),
         const SizedBox(height: 24),
+        if (isBackendUnreachable) ...<Widget>[
+          _buildOfflineHint(context, localizations),
+          const SizedBox(height: 16),
+        ],
         Text(
           isRegisterMode.value
               ? localizations.register
@@ -215,6 +231,39 @@ class LoginView extends HookConsumerWidget {
     );
   }
 
+  // Discreet banner shown when the Appwrite backend is unreachable
+  // (closed intranet, server down). Deliberately NOT an error dialog:
+  // the app stays fully usable, e.g. via demo mode.
+  Widget _buildOfflineHint(
+    BuildContext context,
+    AppLocalizations localizations,
+  ) {
+    final ColorScheme scheme = Theme.of(context).colorScheme;
+
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+      decoration: BoxDecoration(
+        color: scheme.errorContainer.withValues(alpha: 0.5),
+        borderRadius: BorderRadius.circular(10),
+      ),
+      child: Row(
+        children: <Widget>[
+          Icon(Icons.wifi_off, size: 20, color: scheme.onErrorContainer),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Text(
+              localizations.offlineHint,
+              style: TextStyle(
+                fontSize: 13,
+                color: scheme.onErrorContainer,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   // Lets the user explore the app with fake data and no real backend.
   // Switching it on swaps the auth/database services for in-memory fakes; the
   // form is then pre-filled by the `useEffect` in [build] so the user presses
@@ -227,11 +276,11 @@ class LoginView extends HookConsumerWidget {
   }) {
     return Padding(
       padding: const EdgeInsets.only(top: 8),
-      child: SwitchListTile(
+      child: AppSwitchTile(
         contentPadding: EdgeInsets.zero,
-        secondary: const Icon(Icons.science_outlined),
-        title: Text(localizations.demoMode),
-        subtitle: Text(localizations.demoModeDescription),
+        icon: Icons.science_outlined,
+        title: localizations.demoMode,
+        subtitle: localizations.demoModeDescription,
         value: isDemoMode,
         onChanged: (bool enabled) async {
           // Demo mode logs in via the normal login form, never registration.
@@ -255,34 +304,21 @@ class LoginView extends HookConsumerWidget {
     required ValueNotifier<bool> isRegisterMode,
     required AsyncValue<void> authState,
   }) {
-    final bool isLoading = authState.isLoading;
-
-    return FilledButton(
-      onPressed: isLoading
-          ? null
-          : () {
-              _submit(
-                context: context,
-                ref: ref,
-                localizations: localizations,
-                emailController: emailController,
-                passwordController: passwordController,
-                confirmController: confirmController,
-                nameController: nameController,
-                isRegisterMode: isRegisterMode,
-              );
-            },
-      child: isLoading
-          ? const SizedBox(
-              width: 20,
-              height: 20,
-              child: CircularProgressIndicator(strokeWidth: 2),
-            )
-          : Text(
-              isRegisterMode.value
-                  ? localizations.register
-                  : localizations.login,
-            ),
+    return AppPrimaryButton(
+      label: isRegisterMode.value ? localizations.register : localizations.login,
+      isLoading: authState.isLoading,
+      onPressed: () {
+        _submit(
+          context: context,
+          ref: ref,
+          localizations: localizations,
+          emailController: emailController,
+          passwordController: passwordController,
+          confirmController: confirmController,
+          nameController: nameController,
+          isRegisterMode: isRegisterMode,
+        );
+      },
     );
   }
 

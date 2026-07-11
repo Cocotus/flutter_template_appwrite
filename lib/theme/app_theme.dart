@@ -75,9 +75,21 @@ class AppTheme {
 
     final Color shellColor = brandSurface(seedColor);
 
+    // Inter across the whole app — the geometric-humanist sans typical of
+    // modern admin dashboards. The font ships as a bundled asset (see the
+    // pubspec `fonts:` section), NOT via the google_fonts package, so
+    // nothing is fetched from Google at runtime and the app starts fully
+    // offline. Base typography per brightness for correct default colors.
+    final TextTheme textTheme = (isDark
+            ? Typography.material2021().white
+            : Typography.material2021().black)
+        .apply(fontFamily: 'Inter');
+
     return ThemeData(
       useMaterial3: true,
       colorScheme: colorScheme,
+      fontFamily: 'Inter',
+      textTheme: textTheme,
       scaffoldBackgroundColor: _scaffoldBackground(colorScheme, seedColor),
       appBarTheme: _appBarTheme(shellColor),
       navigationRailTheme: _navigationRailTheme(shellColor, seedColor),

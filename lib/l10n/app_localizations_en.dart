@@ -19,7 +19,65 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get homeIntro =>
-      'This is your empty starter home page. Explore Settings, Profile and the developer Logs view — then start building.';
+      'Your starter home page: the first steps to make this template yours, and a live demo of the reusable base widgets.';
+
+  @override
+  String get homeGettingStarted => 'Getting started';
+
+  @override
+  String get homeStepRename =>
+      'Rename the package: find & replace flutter_template_appwrite with your app name, then run flutter pub get.';
+
+  @override
+  String get homeStepBranding =>
+      'Replace assets/images/logo.png (1024×1024) and run: dart run flutter_launcher_icons';
+
+  @override
+  String get homeStepColor =>
+      'Change AppTheme.defaultSeedColor in lib/theme/app_theme.dart — the whole palette (incl. the sidebar) derives from it.';
+
+  @override
+  String get homeStepBackend =>
+      'Connect Appwrite via config/app_config.json — or keep exploring in demo mode without a backend.';
+
+  @override
+  String get homeDemoTitle => 'Base widgets';
+
+  @override
+  String get homeDemoIntro =>
+      'Reusable form elements from lib/widgets/ — use these instead of raw Material widgets so the design stays consistent. This form is wired to a Riverpod controller (home_controller.dart) with a Freezed state.';
+
+  @override
+  String get homeDemoRole => 'Role';
+
+  @override
+  String get homeDemoNotifications => 'Enable notifications';
+
+  @override
+  String get homeDemoSaved => 'Saved — this demo only updates in-memory state.';
+
+  @override
+  String get homeDemoReset => 'Reset';
+
+  @override
+  String get homeMoreInfo =>
+      'The full tutorial lives in the README. The Help page in the sidebar shows how to ship a Markdown user manual with the app.';
+
+  @override
+  String get menuWorkspace => 'Workspace';
+
+  @override
+  String get menuAccount => 'Account';
+
+  @override
+  String get menuSystem => 'System';
+
+  @override
+  String get editOnGithub => 'Edit on GitHub';
+
+  @override
+  String get offlineHint =>
+      'Server not reachable — demo mode still works offline';
 
   @override
   String get login => 'Login';

@@ -89,7 +89,11 @@ GoRouter goRouter(Ref ref) {
       final AsyncValue<appwrite_models.User?> authState =
           ref.read(currentUserProvider);
 
-      final bool isCheckingSession = authState.isLoading;
+      // Only treat this as the startup check when there is no previous
+      // value yet. On logout/refresh, `currentUserProvider` briefly goes
+      // back into a loading state while retaining the previous user, which
+      // must NOT re-park the router on the splash page.
+      final bool isCheckingSession = authState.isLoading && !authState.hasValue;
       final bool isLoggedIn = authState.value != null;
       final String location = state.matchedLocation;
       final bool isOnSplashPage = location == AppRoutes.splash;

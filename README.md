@@ -8,6 +8,10 @@ A **production-ready Flutter starter template** for **Web (first-class), Windows
 - **Talker** logging: console + in-app live log view, automatic Riverpod & route logging, optional remote log sink
 - **go_router** with an auth guard and a persistent, collapsible sidebar shell (`StatefulShellRoute`)
 - **Material 3** light/dark theming, **English/German** localization (ARB), responsive layout
+- **Admin-dashboard design**: full-height dark sidebar (accent-tinted, grouped menu sections, user card + logout at the bottom) with a light page header over the content area; bundled **Inter** font
+- **In-app Markdown docs**: the Help page renders a checked-in user manual (`docs/help_<locale>.md`) — versioned with the code, works offline
+- **Reusable base widgets** (`lib/widgets/`): text/password fields, dropdown, switch tile, primary/secondary buttons with loading spinner, section headers — the Home page demonstrates them live, wired to a Riverpod controller
+- **Offline / intranet ready**: no Google Fonts or other runtime CDN fetches required (see the offline section below)
 
 The app itself is an *empty but complete* shell — login/register, home, settings, profile, about, help and a developer log view — meant to be cloned and extended.
 
@@ -131,6 +135,21 @@ flutter build web --release
 - **Renderer:** builds default to **CanvasKit**. You can opt into the WasmGC build with `flutter build web --wasm` (the old HTML renderer no longer exists).
 - Remember to register the production hostname as a Web platform in the Appwrite console.
 
+### Offline / intranet deployments
+
+Classic Flutter-web pitfall: by default a release build loads **CanvasKit from Google's CDN** (`gstatic.com`) and, when using the `google_fonts` package, **fonts from Google Fonts at runtime** — on a closed intranet the app then hangs or falls back badly. This template avoids both:
+
+- **Fonts are bundled:** Inter ships as asset TTFs (`assets/fonts/`, OFL licensed, see the pubspec `fonts:` section). The `google_fonts` package is deliberately NOT used.
+- **Bundle CanvasKit into the build** instead of loading it from gstatic:
+
+  ```sh
+  flutter build web --release --no-web-resources-cdn
+  ```
+
+  This copies CanvasKit into `build/web/canvaskit/` so everything is served from your own host. (During `flutter run` CanvasKit is always served locally — the flag matters for release builds.)
+- **Login shows an offline hint** (crossed-out network icon) when the Appwrite backend is unreachable; the app itself stays usable — e.g. the demo mode runs entirely in memory.
+- Remaining caveat: glyphs missing from Inter/Material Icons (e.g. emoji) normally come from Google's Noto fallback fonts at runtime; offline they simply don't render. Bundle extra fonts if you need them.
+
 Windows/Linux release builds: `flutter build windows --release` / `flutter build linux --release` (CI builds all three — see `.github/workflows/ci.yml`).
 
 > **Windows note:** if your checkout lives in a deeply nested folder, MSBuild can fail with `MSB3491 … exceeds the maximum path limit` (260 chars, triggered by plugin build files). Clone the repo at a shorter path (e.g. `C:\dev\myapp`) or enable long path support: `reg add HKLM\SYSTEM\CurrentControlSet\Control\FileSystem /v LongPathsEnabled /t REG_DWORD /d 1`.
@@ -150,7 +169,7 @@ lib/
 ├── router/              # go_router: auth guard + StatefulShellRoute shell
 ├── views/               # one folder per feature: view (+ paired controller)
 │   ├── login/           #   login_view.dart + login_controller.dart
-│   ├── shell/           #   header + collapsible NavigationRail
+│   ├── shell/           #   app_shell (page header) + app_sidebar (dark rail)
 │   ├── home/ settings/ profile/ about/ help/ logs/ splash/
 ├── widgets/             # reusable loading / error / empty / snackbar / avatar
 ├── utils/               # redactEmail, mapAuthError
@@ -421,7 +440,7 @@ context.push(AppRoutes.patch);   // adds to the stack (back button works)
 ```
 
 **8d) Sidebar navigation entry** (if shell route):
-The sidebar is defined in `lib/views/shell/app_shell.dart`. Add a new `NavigationRailDestination` entry there — **in the same order** as the `branches` list in the router.
+The sidebar is defined in `lib/views/shell/app_sidebar.dart`. Add a `_NavItem` to one of the grouped `_NavSection` lists there, with `branchIndex` matching the position of your branch in the router's `branches` list.
 
 ---
 

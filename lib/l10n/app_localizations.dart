@@ -119,8 +119,110 @@ abstract class AppLocalizations {
   /// No description provided for @homeIntro.
   ///
   /// In en, this message translates to:
-  /// **'This is your empty starter home page. Explore Settings, Profile and the developer Logs view — then start building.'**
+  /// **'Your starter home page: the first steps to make this template yours, and a live demo of the reusable base widgets.'**
   String get homeIntro;
+
+  /// No description provided for @homeGettingStarted.
+  ///
+  /// In en, this message translates to:
+  /// **'Getting started'**
+  String get homeGettingStarted;
+
+  /// No description provided for @homeStepRename.
+  ///
+  /// In en, this message translates to:
+  /// **'Rename the package: find & replace flutter_template_appwrite with your app name, then run flutter pub get.'**
+  String get homeStepRename;
+
+  /// No description provided for @homeStepBranding.
+  ///
+  /// In en, this message translates to:
+  /// **'Replace assets/images/logo.png (1024×1024) and run: dart run flutter_launcher_icons'**
+  String get homeStepBranding;
+
+  /// No description provided for @homeStepColor.
+  ///
+  /// In en, this message translates to:
+  /// **'Change AppTheme.defaultSeedColor in lib/theme/app_theme.dart — the whole palette (incl. the sidebar) derives from it.'**
+  String get homeStepColor;
+
+  /// No description provided for @homeStepBackend.
+  ///
+  /// In en, this message translates to:
+  /// **'Connect Appwrite via config/app_config.json — or keep exploring in demo mode without a backend.'**
+  String get homeStepBackend;
+
+  /// No description provided for @homeDemoTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Base widgets'**
+  String get homeDemoTitle;
+
+  /// No description provided for @homeDemoIntro.
+  ///
+  /// In en, this message translates to:
+  /// **'Reusable form elements from lib/widgets/ — use these instead of raw Material widgets so the design stays consistent. This form is wired to a Riverpod controller (home_controller.dart) with a Freezed state.'**
+  String get homeDemoIntro;
+
+  /// No description provided for @homeDemoRole.
+  ///
+  /// In en, this message translates to:
+  /// **'Role'**
+  String get homeDemoRole;
+
+  /// No description provided for @homeDemoNotifications.
+  ///
+  /// In en, this message translates to:
+  /// **'Enable notifications'**
+  String get homeDemoNotifications;
+
+  /// No description provided for @homeDemoSaved.
+  ///
+  /// In en, this message translates to:
+  /// **'Saved — this demo only updates in-memory state.'**
+  String get homeDemoSaved;
+
+  /// No description provided for @homeDemoReset.
+  ///
+  /// In en, this message translates to:
+  /// **'Reset'**
+  String get homeDemoReset;
+
+  /// No description provided for @homeMoreInfo.
+  ///
+  /// In en, this message translates to:
+  /// **'The full tutorial lives in the README. The Help page in the sidebar shows how to ship a Markdown user manual with the app.'**
+  String get homeMoreInfo;
+
+  /// Sidebar section caption for the main working area
+  ///
+  /// In en, this message translates to:
+  /// **'Workspace'**
+  String get menuWorkspace;
+
+  /// Sidebar section caption for profile and settings
+  ///
+  /// In en, this message translates to:
+  /// **'Account'**
+  String get menuAccount;
+
+  /// Sidebar section caption for about, help and logs
+  ///
+  /// In en, this message translates to:
+  /// **'System'**
+  String get menuSystem;
+
+  /// Link on Markdown doc pages to edit the file on GitHub
+  ///
+  /// In en, this message translates to:
+  /// **'Edit on GitHub'**
+  String get editOnGithub;
+
+  /// Shown on the login page when the Appwrite backend cannot be reached
+  ///
+  /// In en, this message translates to:
+  /// **'Server not reachable — demo mode still works offline'**
+  String get offlineHint;
 
   /// No description provided for @login.
   ///

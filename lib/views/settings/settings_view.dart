@@ -9,7 +9,10 @@ import 'package:flutter_template_appwrite/services/user_settings_service.dart';
 import 'package:flutter_template_appwrite/theme/accent_colors.dart';
 import 'package:flutter_template_appwrite/views/settings/settings_controller.dart';
 import 'package:flutter_template_appwrite/widgets/app_snackbar.dart';
+import 'package:flutter_template_appwrite/widgets/buttons/app_buttons.dart';
+import 'package:flutter_template_appwrite/widgets/forms/app_switch_tile.dart';
 import 'package:flutter_template_appwrite/widgets/forms/app_text_field.dart';
+import 'package:flutter_template_appwrite/widgets/section_header.dart';
 
 /// Settings page: theme, language, developer mode and display name.
 ///
@@ -53,11 +56,8 @@ class SettingsView extends HookConsumerWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: <Widget>[
-              Text(
-                localizations.settings,
-                style: Theme.of(context).textTheme.headlineMedium,
-              ),
-              const SizedBox(height: 24),
+              SectionHeader.page(title: localizations.settings),
+              const SizedBox(height: 12),
               _buildDarkModeSwitch(
                 localizations: localizations,
                 settings: settings,
@@ -103,9 +103,9 @@ class SettingsView extends HookConsumerWidget {
     required SettingsController controller,
     required bool isSaving,
   }) {
-    return SwitchListTile(
-      title: Text(localizations.darkMode),
-      secondary: const Icon(Icons.dark_mode_outlined),
+    return AppSwitchTile(
+      title: localizations.darkMode,
+      icon: Icons.dark_mode_outlined,
       value: settings.isDarkMode,
       onChanged: isSaving
           ? null
@@ -231,10 +231,10 @@ class SettingsView extends HookConsumerWidget {
     required SettingsController controller,
     required bool isSaving,
   }) {
-    return SwitchListTile(
-      title: Text(localizations.developerMode),
-      subtitle: Text(localizations.developerModeDescription),
-      secondary: const Icon(Icons.terminal_outlined),
+    return AppSwitchTile(
+      title: localizations.developerMode,
+      subtitle: localizations.developerModeDescription,
+      icon: Icons.terminal_outlined,
       value: settings.developerMode,
       onChanged: isSaving
           ? null
@@ -260,13 +260,12 @@ class SettingsView extends HookConsumerWidget {
           ),
         ),
         const SizedBox(width: 16),
-        FilledButton(
-          onPressed: isSaving
-              ? null
-              : () {
-                  controller.setDisplayName(displayNameController.text);
-                },
-          child: Text(localizations.save),
+        AppPrimaryButton(
+          label: localizations.save,
+          isLoading: isSaving,
+          onPressed: () {
+            controller.setDisplayName(displayNameController.text);
+          },
         ),
       ],
     );
