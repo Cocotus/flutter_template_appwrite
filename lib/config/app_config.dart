@@ -44,6 +44,23 @@ class AppConfig {
     defaultValue: 'logs',
   );
 
+  /// The ID of the table that stores one premium `Entitlement` row per
+  /// paying user (written only by the payment webhook function).
+  static const String entitlementsTableId = String.fromEnvironment(
+    'APPWRITE_ENTITLEMENTS_TABLE_ID',
+    defaultValue: 'entitlements',
+  );
+
+  /// The hosted checkout URL of the premium product (e.g. a Lemon Squeezy
+  /// "buy" link). NO secret — it is a public storefront URL; the app only
+  /// appends the account e-mail and user ID as query parameters.
+  ///
+  /// Empty (the default) disables the buy button; the premium card then
+  /// shows a configuration hint instead.
+  static const String premiumCheckoutUrl = String.fromEnvironment(
+    'PREMIUM_CHECKOUT_URL',
+  );
+
   /// The URL that Appwrite embeds in password recovery emails.
   ///
   /// The origin of this URL must be registered as a Web platform in the

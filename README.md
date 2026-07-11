@@ -154,7 +154,61 @@ Windows/Linux release builds: `flutter build windows --release` / `flutter build
 
 > **Windows note:** if your checkout lives in a deeply nested folder, MSBuild can fail with `MSB3491 … exceeds the maximum path limit` (260 chars, triggered by plugin build files). Clone the repo at a shorter path (e.g. `C:\dev\myapp`) or enable long path support: `reg add HKLM\SYSTEM\CurrentControlSet\Control\FileSystem /v LongPathsEnabled /t REG_DWORD /d 1`.
 
-## 7. Project structure
+## 7. Premium licensing / monetization (optional)
+
+The template ships a complete, opt-in premium flow for selling a **one-time
+"lifetime" upgrade** (e.g. premium support) as a solo developer:
+
+```
+App ──"Buy Premium"──▶ Lemon Squeezy hosted checkout (email + userId pre-filled)
+                              │ payment (PayPal/card; LS is Merchant of Record → handles VAT & invoices)
+                              ▼
+                LS webhook `order_created` (HMAC-signed)
+                              ▼
+                Appwrite Function `lemonsqueezy-webhook` (verifies signature)
+                              ▼
+                table `entitlements` (row ID = user ID, READ-only for the user)
+                              ▲
+App ──login / "Check purchase"┘  premiumStatusProvider → isPremiumProvider → PremiumGate
+```
+
+**Why this shape:** the client never decides about premium — the existence of
+an `entitlements` row (writable only by the webhook function via API key) IS
+the entitlement. A Merchant of Record (Lemon Squeezy, Paddle, Polar) acts as
+the seller, so EU VAT, invoices and refunds are their problem, not yours. No
+secret ever ships in the app: the checkout link is a public URL, the signing
+secret and API key live only in the function.
+
+Setup:
+
+1. **Appwrite:** create table `entitlements` with String columns `plan`,
+   `orderId`, `purchasedAt`, `email`. Enable row security. Do **not** grant
+   any table-level permissions to Users — only the function writes rows.
+2. **Function:** deploy `functions/lemonsqueezy-webhook/` (Node 18+ runtime,
+   entrypoint `src/main.js`, HTTP trigger, public execute access). Set env
+   vars `LS_SIGNING_SECRET` and `APPWRITE_API_KEY` (scopes: `rows.read`,
+   `rows.write`, `users.read`).
+3. **Lemon Squeezy:** create a product (one-time purchase), copy its "buy
+   link" into `PREMIUM_CHECKOUT_URL` in `config/app_config.json`, and add a
+   webhook (event `order_created`) pointing at the function's URL with the
+   same signing secret.
+4. **Test the webhook without paying** (replace secret/URL):
+   ```sh
+   BODY='{"meta":{"event_name":"order_created","custom_data":{"user_id":"<APPWRITE_USER_ID>"}},"data":{"id":"1","attributes":{"identifier":"test-1","user_email":"user@example.com","created_at":"2026-01-01T00:00:00Z"}}}'
+   SIG=$(printf '%s' "$BODY" | openssl dgst -sha256 -hmac "<LS_SIGNING_SECRET>" -hex | sed 's/^.* //')
+   curl -X POST "<FUNCTION_URL>" -H "X-Signature: $SIG" -H "Content-Type: application/json" -d "$BODY"
+   ```
+   Then press **"Check purchase"** on the profile page — the account flips
+   to premium.
+
+In the app: the profile page shows the premium card (status / buy / check),
+`isPremiumProvider` exposes the flag, and wrapping any widget in
+`PremiumGate(child: ...)` locks it for free users. Demo mode simulates a
+premium user (see `DemoLicenseService`). Remember: UI gating protects access
+to services (support, server features) — a web client's code itself cannot
+be copy-protected.
+
+## 8. Project structure
 
 ```
 lib/
@@ -178,7 +232,7 @@ lib/
 
 **Rule of thumb:** a *controller* holds the logic of **one view**; a *service* holds logic **shared by many views** (DB, theme, config, logging) and is a keepAlive singleton provider.
 
-## 8. Coding conventions
+## 9. Coding conventions
 
 > This template intentionally favors explicit, verbose, beginner-friendly Dart over concise expert-style code, follows the official Dart naming guidelines, and documents all public APIs, so an average Flutter developer can read, modify and learn from it without prior Riverpod/Freezed experience.
 
@@ -200,7 +254,7 @@ Hard rules (enforced across the whole codebase):
 - **No `runZonedGuarded`** around `runApp`: `PlatformDispatcher.instance.onError` already catches uncaught async errors on all targets and avoids zone-mismatch issues (current Flutter guidance).
 - **Appwrite session persistence is SDK-managed** (cookies/internal store). `flutter_secure_storage` is included as the sanctioned place for any *future* secrets (`SecureStorageService`), not for session tokens.
 
-## 9. Tests
+## 10. Tests
 
 ```sh
 flutter test
@@ -211,7 +265,7 @@ flutter test
 
 ---
 
-## 10. Tutorial: Building your own app from this template
+## 11. Tutorial: Building your own app from this template
 
 This section walks you through transforming this empty shell into your own application — step by step. It's aimed at **intermediate Flutter developers** who want to use the template as a starting point for a tool, utility app, or small project.
 

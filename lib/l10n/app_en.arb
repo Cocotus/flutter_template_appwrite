@@ -32,6 +32,19 @@
   "@menuSystem": {
     "description": "Sidebar section caption for about, help and logs"
   },
+  "premiumTitle": "Premium",
+  "premiumActive": "Premium unlocked",
+  "@premiumActive": {
+    "description": "Shown on the profile page when the user has a premium entitlement"
+  },
+  "premiumUpsell": "Unlock premium support and future premium features with a one-time purchase.",
+  "premiumBuy": "Buy Premium",
+  "premiumCheckPurchase": "Check purchase",
+  "@premiumCheckPurchase": {
+    "description": "Button that re-reads the entitlement after returning from the checkout"
+  },
+  "premiumLocked": "This feature requires Premium.",
+  "premiumCheckoutMissing": "Checkout is not configured yet — set PREMIUM_CHECKOUT_URL in config/app_config.json.",
   "editOnGithub": "Edit on GitHub",
   "@editOnGithub": {
     "description": "Link on Markdown doc pages to edit the file on GitHub"

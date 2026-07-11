@@ -4,6 +4,8 @@
   "APPWRITE_DATABASE_ID": "app",
   "APPWRITE_USER_SETTINGS_TABLE_ID": "user_settings",
   "APPWRITE_LOGS_TABLE_ID": "logs",
+  "APPWRITE_ENTITLEMENTS_TABLE_ID": "entitlements",
+  "PREMIUM_CHECKOUT_URL": "",
   "PASSWORD_RECOVERY_URL": "http://localhost:8080/reset-password",
   "REMOTE_LOGGING_ENABLED": false,
   "DEMO_MODE_ALLOWED": false

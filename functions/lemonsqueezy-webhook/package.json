@@ -1,0 +1,10 @@
+{
+  "name": "lemonsqueezy-webhook",
+  "version": "1.0.0",
+  "description": "Appwrite Function: turns Lemon Squeezy order_created webhooks into entitlement rows",
+  "type": "module",
+  "main": "src/main.js",
+  "dependencies": {
+    "node-appwrite": "^20.0.0"
+  }
+}
