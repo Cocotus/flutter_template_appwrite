@@ -151,11 +151,11 @@ Vier Schichten unter `lib/`:
 **von vielen Views geteilt wird**.
 
 **Schichtenregel:** Controller hängen von **Service-Schnittstellen** ab, niemals
-direkt von einem rohen Backend-Client (SDK, HTTP, DB) — das hält sie testbar (§8).
-Ein **zustandsloser Service ist eine schlichte Klasse**, die über einen
-`keepAlive`-Funktionsprovider bereitgestellt wird (leicht per `overrideWithValue`
-in Tests). Mache ihn nur dann zu einer Notifier-Klasse, wenn er tatsächlich
-Zustand hält.
+direkt von einem rohen Backend-Client (SDK, HTTP, DB) — das hält die Schichten
+sauber getrennt und leicht austauschbar (z. B. Demo-Modus, siehe
+`services/demo/`). Ein **zustandsloser Service ist eine schlichte Klasse**, die
+über einen `keepAlive`-Funktionsprovider bereitgestellt wird. Mache ihn nur
+dann zu einer Notifier-Klasse, wenn er tatsächlich Zustand hält.
 
 ---
 
@@ -284,14 +284,17 @@ hier die zu verwendende Best Practice:
 
 ## 8. Testen
 
-- Hänge von **Service-Schnittstellen** ab und überschreibe dann die Service-Provider
-  mit **handgeschriebenen Fakes** (bevorzugt gegenüber einem Mocking-Framework —
-  besser lesbar) via `ProviderContainer` / `ProviderScope(overrides: [...])`. Tests
-  gehen nie ins Netz.
-- Liefere mindestens einen **Widget-Test** (ein Screen rendert/schaltet um) und einen
-  **Controller-Test** (Logik gegen einen gefakten Service).
-- Hinweis: Riverpod 3 exportiert den Typ `Override` **nicht** — schreibe
-  `overrides: [...]` ohne explizites Typargument.
+**Dieses Projekt verzichtet bewusst auf eine eigene Unit-/Widget-Test-Suite.**
+Schreibe **keine** `test/`-Dateien und keine `flutter_test`-Abhängigkeiten,
+außer der Benutzer bittet explizit darum. Verifiziere Änderungen stattdessen
+manuell (App starten, `flutter analyze`, ggf. Browser-Preview) — siehe §13.
+
+Falls der Benutzer für ein *anderes* Projekt doch Tests wünscht: Hänge von
+**Service-Schnittstellen** ab und überschreibe dann die Service-Provider mit
+**handgeschriebenen Fakes** (bevorzugt gegenüber einem Mocking-Framework —
+besser lesbar) via `ProviderContainer` / `ProviderScope(overrides: [...])`.
+Riverpod 3 exportiert den Typ `Override` **nicht** — schreibe
+`overrides: [...]` ohne explizites Typargument.
 
 ---
 
@@ -352,9 +355,10 @@ Bevorzugte Steuerungs-/Event-Verwaltung aus der UI:
   **`dart run build_runner build`** aus; nach dem Ändern von ARB-Dateien
   regeneriere die Lokalisierungen. (`--delete-conflicting-outputs` ist bei
   `build_runner` ≥ 2.15 obsolet.)
-- Bevor du „fertig" meldest: **`flutter analyze` muss sauber durchlaufen** und
-  **`flutter test` muss bestehen**. Nenne Ergebnisse ehrlich; wenn etwas fehlschlägt
-  oder übersprungen wird, sage es.
+- Bevor du „fertig" meldest: **`flutter analyze` muss sauber durchlaufen.**
+  Es gibt bewusst keine Testsuite (§8) — verifiziere stattdessen durch
+  tatsächliches Ausführen der App (Browser-Preview o. Ä.), wo sinnvoll. Nenne
+  Ergebnisse ehrlich; wenn etwas fehlschlägt oder übersprungen wird, sage es.
 - Passe dich in jeder Änderung dem **Stil des umgebenden Codes** an (Kommentardichte,
   Benennung, Idiome).
 - Halte Änderungen eng umrissen; füge keine Abhängigkeiten oder zweite Frameworks

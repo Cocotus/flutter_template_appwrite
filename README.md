@@ -12,6 +12,7 @@ A **production-ready Flutter starter template** for **Web (first-class), Windows
 - **In-app Markdown docs**: the Help page renders a checked-in user manual (`docs/help_<locale>.md`) — versioned with the code, works offline
 - **Reusable base widgets** (`lib/widgets/`): text/password fields, dropdown, switch tile, primary/secondary buttons with loading spinner, section headers — the Home page demonstrates them live, wired to a Riverpod controller
 - **Offline / intranet ready**: no Google Fonts or other runtime CDN fetches required (see the offline section below)
+- **Optional premium licensing**: a one-time-purchase flow (Lemon Squeezy checkout → webhook → Appwrite `entitlements` table) with a ready-made `PremiumGate` widget — see the monetization section below
 
 The app itself is an *empty but complete* shell — login/register, home, settings, profile, about, help and a developer log view — meant to be cloned and extended.
 
@@ -58,7 +59,8 @@ The app itself is an *empty but complete* shell — login/register, home, settin
    - **Permissions:** enable **row security**. On the table, grant **Create** to role **Users** (any logged-in user may create their own row). Do **not** grant table-level read/update/delete — those are granted at row level automatically when the user creates their row (the code sets the user as document owner).
    - The app stores **one row per user with the row ID equal to the Appwrite user ID**, so lookups are direct and there is exactly one settings row per user.
 6. *(Optional, for remote logging)* create a table `logs` with columns `level` (String), `message` (String), `stackTrace` (String, size ~16384), `timestamp` (String), `userId` (String), and grant **Create** to role **Users**.
-7. **Password reset (TODO for your app):** this template calls `account.createRecovery(...)` to send the reset email. The page that *completes* the reset (reads the `userId`/`secret` URL parameters and calls `account.updateRecovery(...)`) is **not implemented** in this template — you must add it. The `PASSWORD_RECOVERY_URL` in the config is a placeholder.
+7. *(Optional, for premium licensing)* create a table `entitlements` — see section 7 "Premium licensing / monetization" below for columns, permissions and the webhook function.
+8. **Password reset (TODO for your app):** this template calls `account.createRecovery(...)` to send the reset email. The page that *completes* the reset (reads the `userId`/`secret` URL parameters and calls `account.updateRecovery(...)`) is **not implemented** in this template — you must add it. The `PASSWORD_RECOVERY_URL` in the config is a placeholder.
 
 ## 2. Configure the project
 
@@ -75,10 +77,15 @@ cp config/app_config.example.json config/app_config.json
   "APPWRITE_DATABASE_ID": "app",
   "APPWRITE_USER_SETTINGS_TABLE_ID": "user_settings",
   "APPWRITE_LOGS_TABLE_ID": "logs",
+  "APPWRITE_ENTITLEMENTS_TABLE_ID": "entitlements",
+  "PREMIUM_CHECKOUT_URL": "",
   "PASSWORD_RECOVERY_URL": "http://localhost:8080/reset-password",
-  "REMOTE_LOGGING_ENABLED": false
+  "REMOTE_LOGGING_ENABLED": false,
+  "DEMO_MODE_ALLOWED": false
 }
 ```
+
+`APPWRITE_ENTITLEMENTS_TABLE_ID` and `PREMIUM_CHECKOUT_URL` are only needed if you use the premium licensing feature (section 7); leave `PREMIUM_CHECKOUT_URL` empty to keep the buy button disabled.
 
 `config/app_config.json` is **gitignored** — no secrets are ever committed. The values are injected at build time via `--dart-define-from-file` (see `lib/config/app_config.dart`).
 
@@ -211,23 +218,34 @@ be copy-protected.
 ## 8. Project structure
 
 ```
-lib/
-├── main.dart            # bootstrap: URL strategy, error hooks → Talker, ProviderScope
-├── app.dart             # MaterialApp.router: theme, locale, localization delegates
-├── config/              # AppConfig (--dart-define), no secrets in code
-├── models/              # Freezed models (UserSettings, RemoteLogEntry)
-├── services/            # shared/cross-cutting logic as keepAlive providers:
-│                        #   Appwrite client, Auth, Database (TablesDB), Logger,
-│                        #   RemoteLogSink, Preferences, SecureStorage,
-│                        #   UserSettings, Theme, Locale, AppVersion
-├── router/              # go_router: auth guard + StatefulShellRoute shell
-├── views/               # one folder per feature: view (+ paired controller)
-│   ├── login/           #   login_view.dart + login_controller.dart
-│   ├── shell/           #   app_shell (page header) + app_sidebar (dark rail)
-│   ├── home/ settings/ profile/ about/ help/ logs/ splash/
-├── widgets/             # reusable loading / error / empty / snackbar / avatar
-├── utils/               # redactEmail, mapAuthError
-└── l10n/                # app_en.arb, app_de.arb (+ generated localizations)
+flutter_template_appwrite/
+├── lib/
+│   ├── main.dart          # bootstrap: URL strategy, error hooks → Talker, ProviderScope
+│   ├── app.dart            # MaterialApp.router: theme, locale, localization delegates
+│   ├── config/             # AppConfig (--dart-define), no secrets in code
+│   ├── models/              # Freezed models: UserSettings, RemoteLogEntry, Entitlement
+│   ├── services/            # shared/cross-cutting logic as keepAlive providers:
+│   │                        #   Appwrite client, Auth, Database (TablesDB), License,
+│   │                        #   Logger, RemoteLogSink, Preferences, SecureStorage,
+│   │                        #   UserSettings, Theme, Locale, AppVersion
+│   │   └── demo/            # in-memory fakes backing demo mode (no Appwrite needed)
+│   ├── router/              # go_router: auth guard + StatefulShellRoute shell
+│   ├── views/               # one folder per feature: view (+ paired controller)
+│   │   ├── login/           #   login_view.dart + login_controller.dart
+│   │   ├── shell/           #   app_shell (page header) + app_sidebar (dark rail)
+│   │   ├── home/            #   home_view.dart + home_controller.dart + home_state.dart
+│   │   └── settings/ profile/ about/ help/ logs/ splash/
+│   ├── widgets/             # reusable widgets, shared across views
+│   │   ├── buttons/         #   AppPrimaryButton / AppSecondaryButton
+│   │   ├── forms/           #   AppTextField, AppPasswordField, AppSwitchTile, AppDropdownField
+│   │   └── (root)           #   section_header, markdown_page, premium_gate, snackbar, avatar, ...
+│   ├── theme/                # AppTheme (single source for all styling) + accent_colors
+│   ├── utils/                # redactEmail, mapAuthError
+│   └── l10n/                 # app_en.arb, app_de.arb (+ generated localizations)
+├── docs/                    # Markdown shown in-app by the Help page (docs/help_<locale>.md)
+├── functions/               # Appwrite Functions deployed separately from the Flutter app
+│   └── lemonsqueezy-webhook/  # turns LS `order_created` webhooks into entitlement rows
+└── config/                  # app_config.example.json (template) + your gitignored app_config.json
 ```
 
 **Rule of thumb:** a *controller* holds the logic of **one view**; a *service* holds logic **shared by many views** (DB, theme, config, logging) and is a keepAlive singleton provider.
@@ -240,12 +258,14 @@ Hard rules (enforced across the whole codebase):
 
 - **No `StatefulWidget` / `ConsumerStatefulWidget`.** `StatelessWidget` only for logic-free UI; anything with state uses `ConsumerWidget` or `HookConsumerWidget` plus a paired `@riverpod` controller.
 - **`TextEditingController`s live in the view** via `useTextEditingController()` (auto-disposed by hooks); controllers receive **plain Strings only** and **never a `BuildContext`**. UI-only flags (password visibility toggle, checkbox state) stay in the view as hooks; domain logic goes into the controller.
-- View logic lives in **controllers**, shared logic in **services**; controllers call services, **never the raw Appwrite client** — that keeps them mockable (see `test/fakes/`).
+- View logic lives in **controllers**, shared logic in **services**; controllers call services, **never the raw Appwrite client** directly — that keeps the service layer the single place that talks to Appwrite.
 - Long-lived services are `@Riverpod(keepAlive: true)`; everything else auto-disposes (Riverpod 3 default).
 - All models are **`@freezed`** with `fromJson`/`toJson`.
 - All async work is exposed as **`AsyncValue`**; views render it with the shared loading/error/empty widgets and react to results via `ref.listen` (snackbars, navigation).
 - **All logging via Talker** (`LoggerService`) — no `print`/`debugPrint`; log exceptions once, where they are handled, with context; **never log secrets or PII** (redact emails etc.).
+- **No cascade operators (`..`)** and no multi-step arrow (`=>`) method bodies — resolve them into explicit statements on a named `final` variable instead. Readability over brevity throughout.
 - **Style:** explicit types, block bodies over multi-step `=>`, `if`/`else` over nested ternaries, named intermediate variables over long call chains, `_buildXxx()` helpers for big widget trees, consistent newline placement (`trailing commas + dartfmt`).
+- **Reusable UI elements live in `lib/widgets/`** (buttons, form fields, section headers, ...) — never restyle a raw Material widget inline in a view; add a wrapper there instead so the look stays consistent app-wide. Colors/typography/radii themselves stay centralized in `lib/theme/app_theme.dart`.
 
 ### Documented deviations from common older guides
 
@@ -254,18 +274,9 @@ Hard rules (enforced across the whole codebase):
 - **No `runZonedGuarded`** around `runApp`: `PlatformDispatcher.instance.onError` already catches uncaught async errors on all targets and avoids zone-mismatch issues (current Flutter guidance).
 - **Appwrite session persistence is SDK-managed** (cookies/internal store). `flutter_secure_storage` is included as the sanctioned place for any *future* secrets (`SecureStorageService`), not for session tokens.
 
-## 10. Tests
-
-```sh
-flutter test
-```
-
-- `test/views/login_view_test.dart` — widget tests: form renders, register-mode toggle, password eye toggle.
-- `test/controllers/login_controller_test.dart` — controller tests against hand-written fakes (`test/fakes/fake_services.dart`) via provider overrides; no network involved.
-
 ---
 
-## 11. Tutorial: Building your own app from this template
+## 10. Tutorial: Building your own app from this template
 
 This section walks you through transforming this empty shell into your own application — step by step. It's aimed at **intermediate Flutter developers** who want to use the template as a starting point for a tool, utility app, or small project.
 
@@ -305,10 +316,12 @@ These references must be updated **everywhere** in the project:
 |---|---|
 | `pubspec.yaml` | `name:` (e.g. `my_tool`) and `description:` |
 | `lib/` — all `import` statements | Package name in import paths (`flutter_template_appwrite` → `my_tool`) |
-| `android/app/build.gradle` | `applicationId` |
 | `windows/runner/Runner.rc` | `ProductName`, `FileDescription` |
+| `linux/CMakeLists.txt` | `BINARY_NAME` / application name |
 | `web/index.html` | `<title>` |
 | `web/manifest.json` | `"name"` and `"short_name"` |
+
+This template targets **Web, Windows and Linux only** (see section 1) — there is no `android/`/`ios/` folder to rename.
 
 **Tip:** Use a global find & replace (`flutter_template_appwrite` → `my_tool`) across the entire project folder, then run:
 ```bash
@@ -539,6 +552,7 @@ dart run build_runner watch --delete-conflicting-outputs
 - [ ] Generated `app_localizations*.dart` files added to `.gitignore`
 - [ ] `dart run build_runner build` executed
 - [ ] `flutter analyze` passes without errors
+- [ ] Premium licensing removed or configured (section 7) — decide before shipping
 
 ---
 
