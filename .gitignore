@@ -52,7 +52,7 @@ config/app_config.json
 .arb_ai_state.json
 
 # Generated localizations — do NOT edit manually; regenerated on every build.
-# Only app_en.arb and app_de.arb are real source files.
+# app_*.arb files are real source files.
 lib/l10n/app_localizations.dart
 lib/l10n/app_localizations_de.dart
 lib/l10n/app_localizations_en.dart
