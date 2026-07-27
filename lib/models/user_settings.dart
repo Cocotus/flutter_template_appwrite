@@ -1,5 +1,7 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
 
+import 'package:flutter_template_appwrite/theme/app_theme.dart';
+
 part 'user_settings.freezed.dart';
 part 'user_settings.g.dart';
 
@@ -30,9 +32,11 @@ abstract class UserSettings with _$UserSettings {
     ///
     /// The whole Material 3 palette is derived from this single color via
     /// `ColorScheme.fromSeed` (see `AppTheme`), for both light and dark mode.
-    /// Stored as an int so it serializes cleanly to JSON / Appwrite; the
-    /// default matches the template's original blue seed.
-    @Default(0xFF3D5AFE) int accentColorValue,
+    /// Stored as an int so it serializes cleanly to JSON / Appwrite. The
+    /// default references [AppTheme.defaultSeedColorValue] instead of
+    /// repeating the literal, so the app's default accent lives in exactly
+    /// one place.
+    @Default(AppTheme.defaultSeedColorValue) int accentColorValue,
 
     /// Whether developer mode is enabled.
     ///

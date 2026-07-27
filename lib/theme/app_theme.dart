@@ -20,8 +20,19 @@ class AppTheme {
   // Namespace for static builders; never instantiated.
   const AppTheme._();
 
+  /// The app's default accent color as a 32-bit ARGB integer.
+  ///
+  /// **This is the single place to change the default accent color.**
+  ///
+  /// Exposed as an `int` as well as a [Color] because `UserSettings` stores
+  /// the accent as an ARGB int and its Freezed `@Default(...)` annotation
+  /// needs a compile-time constant of that type. Keeping both derived from
+  /// this single literal is what stops the default color from drifting
+  /// apart across theme, palette and model.
+  static const int defaultSeedColorValue = 0xFF3D5AFE;
+
   /// The fallback seed color used before any user setting is known.
-  static const Color defaultSeedColor = Color(0xFF3D5AFE);
+  static const Color defaultSeedColor = Color(defaultSeedColorValue);
 
   // The deep navy base that header + sidebar are built from. The user's
   // accent color is blended on top (see [brandSurface]).
