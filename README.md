@@ -469,21 +469,25 @@ Text(l10n.patchButtonLabel)
 The template starts with a blue shade as the default color. The primary place to change is:
 
 ```dart
-// lib/theme/app_theme.dart — around line 24
-static const Color defaultSeedColor = Color(0xFF3D5AFE); // ← your color here
-```
-
-This automatically derives the entire Material 3 color scheme (light, dark, sidebar, buttons, etc.) — you don't need to adjust anything else in the theme.
-
-**But the literal currently lives in three places** — see "Common pitfalls" below. The cleanest fix is to declare the value once as an `int` and reference it everywhere else, which also works inside the Freezed annotation:
-
-```dart
 // lib/theme/app_theme.dart
 static const int defaultSeedColorValue = 0xFF3D5AFE; // ← your color here
-static const Color defaultSeedColor = Color(defaultSeedColorValue);
+```
 
-// lib/models/user_settings.dart
-@Default(AppTheme.defaultSeedColorValue) int accentColorValue,
+That is the **only** Dart edit. `defaultSeedColor` derives from it, `accent_colors.dart` references `AppTheme.defaultSeedColor`, and `user_settings.dart` uses `@Default(AppTheme.defaultSeedColorValue)` — so the theme, the palette in Settings and the persisted per-user default can no longer drift apart. Changing this one line derives the entire Material 3 color scheme (light, dark, sidebar, buttons, etc.).
+
+Run `dart run build_runner build` afterwards: the model default is baked into `user_settings.freezed.dart`, so the new value only reaches the generated code once you regenerate.
+
+> The value is exposed as an `int` *and* a `Color` on purpose. A Freezed
+> `@Default(...)` needs a compile-time constant of the field's type, and
+> `accentColorValue` is stored as an ARGB `int` so it serializes cleanly to
+> Appwrite — an annotation cannot reference a `Color`.
+
+**One place is outside Dart and needs a second edit:** `web/manifest.json` sets the browser theme color for the installed PWA and the mobile address bar. It is JSON, so it cannot reference the const:
+
+```jsonc
+// web/manifest.json
+"background_color": "#1A1C2E",   // tracks AppTheme._brandNavyBase
+"theme_color": "#3D5AFE"         // ← keep in sync with defaultSeedColorValue
 ```
 
 **Tip:** The list of accent colors offered in Settings is in `lib/theme/accent_colors.dart`. The first entry should point to `AppTheme.defaultSeedColor`:
@@ -619,7 +623,8 @@ dart run build_runner watch
 - [ ] `LICENSE` copyright line updated
 - [ ] `assets/images/logo.png` replaced (1024×1024 px)
 - [ ] `dart run flutter_launcher_icons` executed
-- [ ] `AppTheme.defaultSeedColor` in `app_theme.dart` adjusted — and the default in `user_settings.dart` with it
+- [ ] `AppTheme.defaultSeedColorValue` in `app_theme.dart` adjusted (the single Dart source of truth)
+- [ ] `theme_color` in `web/manifest.json` matches it — not covered by the const
 - [ ] Default `AccentColor` entry in `accent_colors.dart` points to `AppTheme.defaultSeedColor`
 - [ ] Demo home page replaced or consciously kept (Step 8f)
 - [ ] New views and routes created; branch order consistent across all four locations (Step 8e)
@@ -637,17 +642,22 @@ dart run build_runner watch
 
 `lib/l10n/app_localizations.dart`, `app_localizations_de.dart`, and `app_localizations_en.dart` are **auto-generated** and must not be edited by hand — only `app_en.arb` and `app_de.arb` are real source files. They **are** checked into Git, deliberately: the CI `analyze` job does not run `flutter gen-l10n`, so a build from a clean checkout needs them present. Regenerate with `flutter gen-l10n` and commit the result.
 
-#### Accent color: three places, not one
+#### Accent color: one Dart const, plus the web manifest
 
-The default color value (`0xFF3D5AFE`) exists in the template at **three** locations:
+The Dart side is consolidated: `AppTheme.defaultSeedColorValue` is the one literal, and everything else derives from it.
 
-| File | Occurrence |
-|---|---|
-| `lib/theme/app_theme.dart` | `defaultSeedColor` |
-| `lib/theme/accent_colors.dart` | the first `AccentColor` entry |
-| `lib/models/user_settings.dart` | `@Default(0xFF3D5AFE) int accentColorValue` |
+| File | Occurrence | Needs editing? |
+|---|---|---|
+| `lib/theme/app_theme.dart` | `defaultSeedColorValue` | **yes — this is the source of truth** |
+| `lib/theme/app_theme.dart` | `defaultSeedColor` | no, derived |
+| `lib/theme/accent_colors.dart` | first `AccentColor` entry | no, references `defaultSeedColor` |
+| `lib/models/user_settings.dart` | `@Default(AppTheme.defaultSeedColorValue)` | no, references the const |
+| `web/manifest.json` | `theme_color` | **yes — JSON, cannot reference Dart** |
 
-The third one is easy to miss: a Freezed annotation needs a `const` expression, so it cannot reference a `Color`. Changing only the theme leaves the persisted user default out of sync with it. Step 6 shows how to collapse all three into a single `const int`.
+Two things still bite:
+
+- **`web/manifest.json` is not covered by the const** and is the one place people forget. The PWA then installs with the old brand color while the app itself uses the new one.
+- **Regenerate after changing it.** `user_settings.freezed.dart` bakes the default in at generation time, so the value only takes effect in the model once `dart run build_runner build` has run.
 
 #### Two dead placeholder URLs
 
