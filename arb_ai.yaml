@@ -1,5 +1,7 @@
 provider: gemini
 api_key_env: ARB_AI_API_KEY
+# Optional override if you do not want arb_ai's provider default:
+# model: gemini-1.5-flash
 source_arb: lib/l10n/app_en.arb
 targets:
   - de

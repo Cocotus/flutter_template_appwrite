@@ -163,11 +163,12 @@ flutter gen-l10n
 
 ### Suggested private-repo workflow
 
+Prerequisite: add repository secret `ARB_AI_API_KEY`.
+
 1. Developers add new keys in `lib/l10n/app_en.arb`.
-2. Add repository secret `ARB_AI_API_KEY`.
-3. Run the manual workflow from GitHub **Actions** tab → **AI Translate ARB** → **Run workflow** (or run `arb_ai` locally).
-4. Commit updated ARBs + generated `app_localizations*.dart`.
-5. CI continues with `flutter analyze`.
+2. Run the manual workflow from GitHub **Actions** tab → **AI Translate ARB** → **Run workflow** (or run `arb_ai` locally).
+3. Commit updated ARBs + generated `app_localizations*.dart`.
+4. CI continues with `flutter analyze`.
 
 This avoids monthly translation platforms and keeps all strings versioned in Git PRs.
 
