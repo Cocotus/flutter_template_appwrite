@@ -127,7 +127,8 @@ If you want low-ops translation automation for a private repository, this templa
 
 ### Cost / Gemini note
 
-- `arb_ai` currently supports **Gemini** as provider.
+- This template config (`arb_ai.yaml`) is set up to use **Gemini** as provider.
+- `arb_ai` provider support evolves; check the upstream package docs for the current provider list/version details.
 - Gemini is **not included** automatically: you must provide your own API key.
 - Depending on your Google account/project, you may have a free tier, but usage limits and billing rules are controlled by Google and can change.
 
