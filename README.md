@@ -35,9 +35,9 @@ The app itself is an *empty but complete* shell — login/register, home, settin
    ```
 4. **Linux prerequisites** (build machine):
    ```sh
-   sudo apt-get install clang cmake ninja-build pkg-config libgtk-3-dev libsecret-1-dev
+   sudo apt-get install clang cmake ninja-build pkg-config libgtk-3-dev libsecret-1-dev libwebkit2gtk-4.1-dev
    ```
-   `libsecret-1-dev` is required by `flutter_secure_storage`; at runtime a keyring service (e.g. `gnome-keyring`) must be available.
+   `libsecret-1-dev` is required by `flutter_secure_storage`; at runtime a keyring service (e.g. `gnome-keyring`) must be available. `libwebkit2gtk-4.1-dev` is required by `flutter build linux` — note the **4.1**, not 4.0, on Ubuntu 24.04 (Noble). This list matches the one the Linux CI job installs (`.github/workflows/ci.yml`).
 
 ### Appwrite Cloud setup
 
@@ -91,7 +91,7 @@ cp config/app_config.example.json config/app_config.json
 
 ## 3. Code generation & first run
 
-Generated files (`*.g.dart`, `*.freezed.dart`, `lib/l10n/app_localizations*.dart`) **are committed**, so the template builds out of the box. After changing models, providers or ARB files, regenerate:
+Generated files (`*.g.dart`, `*.freezed.dart`, `lib/l10n/app_localizations*.dart`) **are committed**, so the template builds out of the box — and they should stay committed in your app too. The CI `analyze` job does not run `flutter gen-l10n`, so ignoring the localization output breaks CI. Never edit these files by hand; regenerate them instead. After changing models, providers or ARB files:
 
 ```sh
 flutter pub get
@@ -109,7 +109,7 @@ flutter run -d windows --dart-define-from-file=config/app_config.json
 flutter run -d linux   --dart-define-from-file=config/app_config.json
 ```
 
-VS Code users: ready-made launch configurations are in `.vscode/launch.json`.
+VS Code users: ready-made launch configurations are in `.vscode/launch.json`. Claude Code users: `.claude/launch.json` serves the same purpose for the in-app browser preview — make sure any configuration you add there also passes `--dart-define-from-file=config/app_config.json`, otherwise the app starts silently on the built-in fallback configuration.
 
 First start shows the **login screen**: register a user (this creates the Appwrite account, logs in and writes the default settings row), then explore Settings → enable **Developer mode** to reveal the Logs view in the sidebar.
 
@@ -274,6 +274,14 @@ Hard rules (enforced across the whole codebase):
 - **No `runZonedGuarded`** around `runApp`: `PlatformDispatcher.instance.onError` already catches uncaught async errors on all targets and avoids zone-mismatch issues (current Flutter guidance).
 - **Appwrite session persistence is SDK-managed** (cookies/internal store). `flutter_secure_storage` is included as the sanctioned place for any *future* secrets (`SecureStorageService`), not for session tokens.
 
+### Which document wins
+
+Three files describe how to work in this repository. When they disagree:
+
+1. **`AGENTS.md`** — the authoritative rulebook for humans and coding agents alike. It expands the rules above with rationale and worked examples.
+2. **This README** — setup, tutorial and the customization checklist.
+3. **`AIInstructions.md`** — the original prompt this template was generated from, kept for provenance. It is *not* maintained against the current code and contradicts `AGENTS.md` in places (most visibly on testing). Treat it as history, not as instructions.
+
 ---
 
 ## 10. Tutorial: Building your own app from this template
@@ -316,17 +324,54 @@ These references must be updated **everywhere** in the project:
 |---|---|
 | `pubspec.yaml` | `name:` (e.g. `my_tool`) and `description:` |
 | `lib/` — all `import` statements | Package name in import paths (`flutter_template_appwrite` → `my_tool`) |
-| `windows/runner/Runner.rc` | `ProductName`, `FileDescription` |
-| `linux/CMakeLists.txt` | `BINARY_NAME` / application name |
+| `windows/runner/Runner.rc` | `ProductName`, `FileDescription`, `InternalName`, `OriginalFilename` |
+| `windows/CMakeLists.txt` | `project()` and `BINARY_NAME` |
+| `windows/runner/main.cpp` | the window title passed to `CreateAndShow` |
+| `linux/CMakeLists.txt` | `BINARY_NAME` **and** `APPLICATION_ID` |
+| `linux/runner/my_application.cc` | both `gtk_*_set_title` calls |
 | `web/index.html` | `<title>` |
 | `web/manifest.json` | `"name"` and `"short_name"` |
+| `LICENSE` | the copyright line |
+| `lib/l10n/app_en.arb`, `app_de.arb` | `appTitle` (Step 3) — and see the warning below |
 
 This template targets **Web, Windows and Linux only** (see section 1) — there is no `android/`/`ios/` folder to rename.
 
-**Tip:** Use a global find & replace (`flutter_template_appwrite` → `my_tool`) across the entire project folder, then run:
+**Do this with a scripted replace, not by hand.** `lib/` alone contains 161 occurrences across 43 files:
+
 ```bash
+# from the project root — bash / git-bash / WSL
+grep -rl flutter_template_appwrite . --exclude-dir=.git \
+  | xargs sed -i 's/flutter_template_appwrite/my_tool/g'
 flutter pub get
 ```
+
+```powershell
+# PowerShell equivalent
+Get-ChildItem -Recurse -File | Where-Object { $_.FullName -notmatch '\\\.git\\' } |
+  ForEach-Object {
+    $c = Get-Content $_.FullName -Raw
+    if ($c -match 'flutter_template_appwrite') {
+      $c -replace 'flutter_template_appwrite', 'my_tool' | Set-Content $_.FullName -Encoding utf8
+    }
+  }
+flutter pub get
+```
+
+> ⚠️ **The global replace also rewrites one user-visible string.** The ARB key
+> `homeStepRename` in `lib/l10n/app_en.arb` / `app_de.arb` contains the literal
+> `flutter_template_appwrite` inside a sentence rendered on the demo home page.
+> After the replace it will read "find & replace my_tool with your app name".
+> That is harmless if you retire the demo home (Step 8), but fix or delete the
+> key if you keep it.
+
+Two more placeholders are **not** package-name occurrences, so the replace above will not catch them:
+
+| File | What to change |
+|---|---|
+| `lib/views/shell/app_shell.dart` | `githubUrl` — `https://github.com/your-org/your-repo`, used by the header link *and* the About page |
+| `lib/views/help/help_view.dart` | `editUrlBase` — the "Edit on GitHub" link of the Help page |
+
+Consider moving both into `lib/config/app_config.dart` so the repository URL exists in exactly one place.
 
 ---
 
@@ -380,7 +425,7 @@ All user-facing text belongs **in the translation files**, never as string liter
 - `lib/l10n/app_en.arb` — English texts (the template file)
 - `lib/l10n/app_de.arb` — German texts
 
-**Never edit** the `.dart` files in the `l10n` folder! `app_localizations.dart`, `app_localizations_de.dart`, and `app_localizations_en.dart` are **auto-generated** and overwritten on every build. They should ideally be added to `.gitignore`.
+**Never edit** the `.dart` files in the `l10n` folder! `app_localizations.dart`, `app_localizations_de.dart`, and `app_localizations_en.dart` are **auto-generated** and overwritten on every build. Keep them committed, though — see section 3.
 
 **Example — adding a new text:**
 ```jsonc
@@ -408,7 +453,9 @@ All user-facing text belongs **in the translation files**, never as string liter
 
 After editing, run `flutter pub get` (or just save — VS Code triggers the generation automatically). Use the texts in code:
 ```dart
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+// Import from your own package — the synthetic `package:flutter_gen/...`
+// import no longer exists in current Flutter versions.
+import 'package:my_tool/l10n/app_localizations.dart';
 
 // Inside a build() method:
 final AppLocalizations l10n = AppLocalizations.of(context)!;
@@ -419,7 +466,7 @@ Text(l10n.patchButtonLabel)
 
 ### Step 6 — Change the default accent color
 
-The template starts with a blue shade as the default color. The **only place** you need to change is:
+The template starts with a blue shade as the default color. The primary place to change is:
 
 ```dart
 // lib/theme/app_theme.dart — around line 24
@@ -427,6 +474,17 @@ static const Color defaultSeedColor = Color(0xFF3D5AFE); // ← your color here
 ```
 
 This automatically derives the entire Material 3 color scheme (light, dark, sidebar, buttons, etc.) — you don't need to adjust anything else in the theme.
+
+**But the literal currently lives in three places** — see "Common pitfalls" below. The cleanest fix is to declare the value once as an `int` and reference it everywhere else, which also works inside the Freezed annotation:
+
+```dart
+// lib/theme/app_theme.dart
+static const int defaultSeedColorValue = 0xFF3D5AFE; // ← your color here
+static const Color defaultSeedColor = Color(defaultSeedColorValue);
+
+// lib/models/user_settings.dart
+@Default(AppTheme.defaultSeedColorValue) int accentColorValue,
+```
 
 **Tip:** The list of accent colors offered in Settings is in `lib/theme/accent_colors.dart`. The first entry should point to `AppTheme.defaultSeedColor`:
 ```dart
@@ -509,6 +567,18 @@ context.push(AppRoutes.patch);   // adds to the stack (back button works)
 **8d) Sidebar navigation entry** (if shell route):
 The sidebar is defined in `lib/views/shell/app_sidebar.dart`. Add a `_NavItem` to one of the grouped `_NavSection` lists there, with `branchIndex` matching the position of your branch in the router's `branches` list.
 
+**8e) Keep all four branch-order locations in sync.** Branch order is positional and there is no compile-time check — get it wrong and the app renders the wrong header with no error anywhere:
+
+1. `AppRoutes` — the path constant (8a)
+2. `app_router.dart` — the position in the `branches:` list (8b)
+3. `app_sidebar.dart` — `_NavItem.branchIndex` (8d)
+4. **`lib/views/shell/app_shell.dart`** — the hardcoded, index-positional `titles` list used for the page header
+
+**8f) Replacing the demo home page.** `lib/views/home/` is a getting-started page plus a live widget demo. Every real app has to retire it; pick one:
+
+- **Replace it** — register your own view at `AppRoutes.home` (branch 0) and delete `lib/views/home/`. Also remove the now-unused `homeStep*` / `homeIntro` ARB keys. Keep the widget demo open in a diff while you build your first page — it is the best reference for the base widgets in `lib/widgets/`.
+- **Keep it and add a branch** — fine for a dashboard-style app where the landing page stays generic.
+
 ---
 
 ### Step 9 — Configure the Appwrite backend
@@ -516,9 +586,9 @@ The sidebar is defined in `lib/views/shell/app_sidebar.dart`. Add a `_NavItem` t
 If you use auth or database features:
 
 1. Create a project on [appwrite.io](https://appwrite.io/).
-2. Enter the endpoint and project ID in the config file:
+2. Enter the endpoint and project ID in the config file (see section 2). The path is exact — it is what `--dart-define-from-file` and both launch configurations reference:
    ```
-   config/app_config.json   (or as named in the template)
+   config/app_config.json
    ```
 3. For the web platform: add a web platform in Appwrite under *Platforms* with your domain (e.g. `localhost`).
 
@@ -528,28 +598,33 @@ If you use auth or database features:
 
 After any change to `@freezed` models or `@riverpod` providers:
 ```bash
-dart run build_runner build --delete-conflicting-outputs
+dart run build_runner build
 ```
 
 During development, it's more convenient to run continuously (regenerates on save):
 ```bash
-dart run build_runner watch --delete-conflicting-outputs
+dart run build_runner watch
 ```
+
+> Older guides pass `--delete-conflicting-outputs` here. With `build_runner` ≥ 2.15 the flag is obsolete and ignored — see section 3.
 
 ---
 
 ### Checklist: New app from template
 
-- [ ] Package name globally replaced (`flutter_template_appwrite` → your name)
+- [ ] Package name globally replaced (`flutter_template_appwrite` → your name), including `windows/`, `linux/` and `LICENSE`
 - [ ] `pubspec.yaml`: `name` and `description` adjusted
-- [ ] `app_en.arb` and `app_de.arb`: `appTitle` set
+- [ ] `app_en.arb` and `app_de.arb`: `appTitle` set, `homeStepRename` fixed or removed
+- [ ] `githubUrl` in `app_shell.dart` and `editUrlBase` in `help_view.dart` point at your repository
+- [ ] `LICENSE` copyright line updated
 - [ ] `assets/images/logo.png` replaced (1024×1024 px)
 - [ ] `dart run flutter_launcher_icons` executed
-- [ ] `AppTheme.defaultSeedColor` in `app_theme.dart` adjusted
+- [ ] `AppTheme.defaultSeedColor` in `app_theme.dart` adjusted — and the default in `user_settings.dart` with it
 - [ ] Default `AccentColor` entry in `accent_colors.dart` points to `AppTheme.defaultSeedColor`
-- [ ] New views and routes created
+- [ ] Demo home page replaced or consciously kept (Step 8f)
+- [ ] New views and routes created; branch order consistent across all four locations (Step 8e)
 - [ ] Appwrite credentials entered (if used)
-- [ ] Generated `app_localizations*.dart` files added to `.gitignore`
+- [ ] `.claude/launch.json` passes `--dart-define-from-file`, if you use it
 - [ ] `dart run build_runner build` executed
 - [ ] `flutter analyze` passes without errors
 - [ ] Premium licensing removed or configured (section 7) — decide before shipping
@@ -560,18 +635,23 @@ dart run build_runner watch --delete-conflicting-outputs
 
 #### Generated files in the l10n folder
 
-`lib/l10n/app_localizations.dart`, `app_localizations_de.dart`, and `app_localizations_en.dart` are **auto-generated** and should not be manually edited or permanently checked into Git. Only `app_en.arb` and `app_de.arb` are real source files.
+`lib/l10n/app_localizations.dart`, `app_localizations_de.dart`, and `app_localizations_en.dart` are **auto-generated** and must not be edited by hand — only `app_en.arb` and `app_de.arb` are real source files. They **are** checked into Git, deliberately: the CI `analyze` job does not run `flutter gen-l10n`, so a build from a clean checkout needs them present. Regenerate with `flutter gen-l10n` and commit the result.
 
-Recommendation — add to `.gitignore`:
-```
-lib/l10n/app_localizations.dart
-lib/l10n/app_localizations_de.dart
-lib/l10n/app_localizations_en.dart
-```
+#### Accent color: three places, not one
 
-#### Accent color: only change in one place
+The default color value (`0xFF3D5AFE`) exists in the template at **three** locations:
 
-The default color value (`0xFF3D5AFE`) exists in the template at two locations (`app_theme.dart` and `accent_colors.dart`) — that's redundant. When customizing, **keep both places in sync** until the template consolidates this.
+| File | Occurrence |
+|---|---|
+| `lib/theme/app_theme.dart` | `defaultSeedColor` |
+| `lib/theme/accent_colors.dart` | the first `AccentColor` entry |
+| `lib/models/user_settings.dart` | `@Default(0xFF3D5AFE) int accentColorValue` |
+
+The third one is easy to miss: a Freezed annotation needs a `const` expression, so it cannot reference a `Color`. Changing only the theme leaves the persisted user default out of sync with it. Step 6 shows how to collapse all three into a single `const int`.
+
+#### Two dead placeholder URLs
+
+`https://github.com/your-org/your-repo` ships in `lib/views/shell/app_shell.dart` (`githubUrl`, used by the header **and** the About page) and `lib/views/help/help_view.dart` (`editUrlBase`). Both are on the checklist above.
 
 ---
 
