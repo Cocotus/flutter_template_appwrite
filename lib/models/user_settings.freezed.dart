@@ -22,8 +22,10 @@ mixin _$UserSettings {
 ///
 /// The whole Material 3 palette is derived from this single color via
 /// `ColorScheme.fromSeed` (see `AppTheme`), for both light and dark mode.
-/// Stored as an int so it serializes cleanly to JSON / Appwrite; the
-/// default matches the template's original blue seed.
+/// Stored as an int so it serializes cleanly to JSON / Appwrite. The
+/// default references [AppTheme.defaultSeedColorValue] instead of
+/// repeating the literal, so the app's default accent lives in exactly
+/// one place.
  int get accentColorValue;/// Whether developer mode is enabled.
 ///
 /// Developer mode reveals the "Logs" entry in the sidebar so the user
@@ -229,7 +231,7 @@ return $default(_that.isDarkMode,_that.languageCode,_that.sidebarCollapsed,_that
 @JsonSerializable()
 
 class _UserSettings implements UserSettings {
-  const _UserSettings({this.isDarkMode = false, this.languageCode = 'en', this.sidebarCollapsed = false, this.accentColorValue = 0xFF3D5AFE, this.developerMode = false, this.displayName = ''});
+  const _UserSettings({this.isDarkMode = false, this.languageCode = 'en', this.sidebarCollapsed = false, this.accentColorValue = AppTheme.defaultSeedColorValue, this.developerMode = false, this.displayName = ''});
   factory _UserSettings.fromJson(Map<String, dynamic> json) => _$UserSettingsFromJson(json);
 
 /// Whether the app uses the dark Material 3 color scheme.
@@ -242,8 +244,10 @@ class _UserSettings implements UserSettings {
 ///
 /// The whole Material 3 palette is derived from this single color via
 /// `ColorScheme.fromSeed` (see `AppTheme`), for both light and dark mode.
-/// Stored as an int so it serializes cleanly to JSON / Appwrite; the
-/// default matches the template's original blue seed.
+/// Stored as an int so it serializes cleanly to JSON / Appwrite. The
+/// default references [AppTheme.defaultSeedColorValue] instead of
+/// repeating the literal, so the app's default accent lives in exactly
+/// one place.
 @override@JsonKey() final  int accentColorValue;
 /// Whether developer mode is enabled.
 ///
