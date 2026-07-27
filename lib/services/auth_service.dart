@@ -110,6 +110,11 @@ AuthService authService(Ref ref) {
 class CurrentUser extends _$CurrentUser {
   @override
   Future<appwrite_models.User?> build() async {
+    if (!AppConfig.hasLogin) {
+      // Public/freeware mode: no auth flow and no Appwrite account checks.
+      return null;
+    }
+
     final AuthService authService = ref.watch(authServiceProvider);
     final LoggerService logger = ref.read(loggerServiceProvider);
 

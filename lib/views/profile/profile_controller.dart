@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
+import 'package:flutter_template_appwrite/config/app_config.dart';
 import 'package:flutter_template_appwrite/services/auth_service.dart';
 import 'package:flutter_template_appwrite/services/demo_mode_service.dart';
 import 'package:flutter_template_appwrite/services/logger_service.dart';
@@ -26,6 +27,12 @@ class ProfileController extends _$ProfileController {
   /// After the session is gone the auth state refresh makes the router
   /// guard navigate back to the login screen automatically.
   Future<void> logout() async {
+    if (!AppConfig.hasLogin) {
+      // Public/freeware mode has no authenticated session to terminate.
+      state = const AsyncValue<void>.data(null);
+      return;
+    }
+
     final LoggerService logger = ref.read(loggerServiceProvider);
     logger.info('Logout requested');
 

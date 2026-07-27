@@ -74,41 +74,52 @@ class ProfileView extends ConsumerWidget {
     required appwrite_models.User user,
     required bool isLoggingOut,
   }) {
+    final List<Widget> children = <Widget>[
+      UserAvatar(displayName: user.name, radius: 48),
+      const SizedBox(height: 24),
+      Text(
+        user.name.isEmpty ? '—' : user.name,
+        style: Theme.of(context).textTheme.headlineSmall,
+      ),
+      const SizedBox(height: 8),
+      Text(
+        user.email,
+        style: Theme.of(context).textTheme.bodyLarge,
+      ),
+    ];
+
+    // Only show the premium card when the app has a paid offering.
+    if (AppConfig.hasPremium) {
+      children.add(const SizedBox(height: 24));
+      children.add(
+        _buildPremiumCard(
+          context: context,
+          ref: ref,
+          localizations: localizations,
+          user: user,
+        ),
+      );
+    }
+
+    children.add(const SizedBox(height: 24));
+    children.add(
+      FilledButton.tonalIcon(
+        onPressed: isLoggingOut
+            ? null
+            : () {
+                ref.read(profileControllerProvider.notifier).logout();
+              },
+        icon: const Icon(Icons.logout),
+        label: Text(localizations.logout),
+      ),
+    );
+
     return Center(
       child: ConstrainedBox(
         constraints: const BoxConstraints(maxWidth: 480),
         child: Column(
           mainAxisSize: MainAxisSize.min,
-          children: <Widget>[
-            UserAvatar(displayName: user.name, radius: 48),
-            const SizedBox(height: 24),
-            Text(
-              user.name.isEmpty ? '—' : user.name,
-              style: Theme.of(context).textTheme.headlineSmall,
-            ),
-            const SizedBox(height: 8),
-            Text(
-              user.email,
-              style: Theme.of(context).textTheme.bodyLarge,
-            ),
-            const SizedBox(height: 24),
-            _buildPremiumCard(
-              context: context,
-              ref: ref,
-              localizations: localizations,
-              user: user,
-            ),
-            const SizedBox(height: 24),
-            FilledButton.tonalIcon(
-              onPressed: isLoggingOut
-                  ? null
-                  : () {
-                      ref.read(profileControllerProvider.notifier).logout();
-                    },
-              icon: const Icon(Icons.logout),
-              label: Text(localizations.logout),
-            ),
-          ],
+          children: children,
         ),
       ),
     );

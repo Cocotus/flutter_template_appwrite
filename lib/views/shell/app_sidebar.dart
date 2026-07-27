@@ -2,12 +2,14 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import 'package:flutter_template_appwrite/config/app_config.dart';
 import 'package:flutter_template_appwrite/l10n/app_localizations.dart';
 import 'package:flutter_template_appwrite/models/user_settings.dart';
 import 'package:flutter_template_appwrite/services/auth_service.dart';
 import 'package:flutter_template_appwrite/services/user_settings_service.dart';
 import 'package:flutter_template_appwrite/theme/app_theme.dart';
 import 'package:flutter_template_appwrite/views/profile/profile_controller.dart';
+import 'package:flutter_template_appwrite/widgets/donate_button.dart';
 import 'package:flutter_template_appwrite/widgets/user_avatar.dart';
 
 // One entry in the sidebar menu; [branchIndex] must match the branch order
@@ -150,9 +152,22 @@ class AppSidebar extends ConsumerWidget {
               children: _buildSections(context, sections),
             ),
           ),
+          _buildDonateButton(),
           _buildUserCard(context, ref, localizations, settings),
         ],
       ),
+    );
+  }
+
+  Widget _buildDonateButton() {
+    final bool shouldShow = !AppConfig.hasPremium &&
+        AppConfig.buyMeCoffeeUsername.isNotEmpty;
+    if (!shouldShow) {
+      return const SizedBox.shrink();
+    }
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+      child: DonateButton(isExpanded: isExpanded),
     );
   }
 

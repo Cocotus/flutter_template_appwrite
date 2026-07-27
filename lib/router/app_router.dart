@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:talker_flutter/talker_flutter.dart';
 
+import 'package:flutter_template_appwrite/config/app_config.dart';
 import 'package:flutter_template_appwrite/services/auth_service.dart';
 import 'package:flutter_template_appwrite/services/logger_service.dart';
 import 'package:flutter_template_appwrite/views/about/about_view.dart';
@@ -86,6 +87,19 @@ GoRouter goRouter(Ref ref) {
     // Logs top-level route changes (login <-> shell) through Talker.
     observers: <NavigatorObserver>[TalkerRouteObserver(talker)],
     redirect: (BuildContext context, GoRouterState state) {
+      final String location = state.matchedLocation;
+      final bool isOnSplashPage = location == AppRoutes.splash;
+      final bool isOnLoginPage = location == AppRoutes.login;
+
+      // When login is disabled (freeware/public mode), the app always goes
+      // straight to the shell — no auth check, no login page.
+      if (!AppConfig.hasLogin) {
+        if (isOnSplashPage || isOnLoginPage) {
+          return AppRoutes.home;
+        }
+        return null;
+      }
+
       final AsyncValue<appwrite_models.User?> authState =
           ref.read(currentUserProvider);
 
@@ -95,9 +109,6 @@ GoRouter goRouter(Ref ref) {
       // must NOT re-park the router on the splash page.
       final bool isCheckingSession = authState.isLoading && !authState.hasValue;
       final bool isLoggedIn = authState.value != null;
-      final String location = state.matchedLocation;
-      final bool isOnSplashPage = location == AppRoutes.splash;
-      final bool isOnLoginPage = location == AppRoutes.login;
 
       // 1) Startup: park on the splash page until account.get() resolves.
       if (isCheckingSession) {

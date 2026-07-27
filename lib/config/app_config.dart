@@ -93,4 +93,40 @@ class AppConfig {
   static const bool demoModeAllowed = bool.fromEnvironment(
     'DEMO_MODE_ALLOWED',
   );
+
+  /// Whether the app ships with a premium/subscription offering.
+  ///
+  /// Set to `false` for freeware apps or open-source tools where there is no
+  /// paid tier. When `false`:
+  ///   - The premium-checkout card on the profile page is hidden.
+  ///   - The "Buy Me a Coffee" donate button is shown in the sidebar
+  ///     (provided [buyMeCoffeeUsername] is non-empty).
+  ///
+  /// Production default: `true` (premium feature enabled, no donate button).
+  static const bool hasPremium = bool.fromEnvironment(
+    'HAS_PREMIUM',
+    defaultValue: true,
+  );
+
+  /// Whether the app requires user authentication.
+  ///
+  /// Set to `false` for fully public tools that need no login. When `false`:
+  ///   - The router skips the login page and splash auth-check entirely.
+  ///   - Appwrite auth services are never called.
+  ///   - User settings live only in memory for the current session
+  ///     (no cloud persistence, because there is no user identity to key on).
+  ///
+  /// Production default: `true` (login required).
+  static const bool hasLogin = bool.fromEnvironment(
+    'HAS_LOGIN',
+    defaultValue: true,
+  );
+
+  /// The Buy Me a Coffee account slug (the part after buymeacoffee.com/).
+  ///
+  /// Used only when [hasPremium] is `false`. Leave empty (the default) to
+  /// suppress the donate button even in freeware mode.
+  static const String buyMeCoffeeUsername = String.fromEnvironment(
+    'BUY_ME_COFFEE_USERNAME',
+  );
 }
