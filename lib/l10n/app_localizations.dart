@@ -212,6 +212,48 @@ abstract class AppLocalizations {
   /// **'System'**
   String get menuSystem;
 
+  /// No description provided for @premiumTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Premium'**
+  String get premiumTitle;
+
+  /// Shown on the profile page when the user has a premium entitlement
+  ///
+  /// In en, this message translates to:
+  /// **'Premium unlocked'**
+  String get premiumActive;
+
+  /// No description provided for @premiumUpsell.
+  ///
+  /// In en, this message translates to:
+  /// **'Unlock premium support and future premium features with a one-time purchase.'**
+  String get premiumUpsell;
+
+  /// No description provided for @premiumBuy.
+  ///
+  /// In en, this message translates to:
+  /// **'Buy Premium'**
+  String get premiumBuy;
+
+  /// Button that re-reads the entitlement after returning from the checkout
+  ///
+  /// In en, this message translates to:
+  /// **'Check purchase'**
+  String get premiumCheckPurchase;
+
+  /// No description provided for @premiumLocked.
+  ///
+  /// In en, this message translates to:
+  /// **'This feature requires Premium.'**
+  String get premiumLocked;
+
+  /// No description provided for @premiumCheckoutMissing.
+  ///
+  /// In en, this message translates to:
+  /// **'Checkout is not configured yet — set PREMIUM_CHECKOUT_URL in config/app_config.json.'**
+  String get premiumCheckoutMissing;
+
   /// Link on Markdown doc pages to edit the file on GitHub
   ///
   /// In en, this message translates to:

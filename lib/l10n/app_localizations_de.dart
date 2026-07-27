@@ -74,6 +74,29 @@ class AppLocalizationsDe extends AppLocalizations {
   String get menuSystem => 'System';
 
   @override
+  String get premiumTitle => 'Premium';
+
+  @override
+  String get premiumActive => 'Premium freigeschaltet';
+
+  @override
+  String get premiumUpsell =>
+      'Schalte Premium-Support und künftige Premium-Funktionen mit einem Einmalkauf frei.';
+
+  @override
+  String get premiumBuy => 'Premium kaufen';
+
+  @override
+  String get premiumCheckPurchase => 'Kauf prüfen';
+
+  @override
+  String get premiumLocked => 'Diese Funktion erfordert Premium.';
+
+  @override
+  String get premiumCheckoutMissing =>
+      'Checkout ist noch nicht konfiguriert — PREMIUM_CHECKOUT_URL in config/app_config.json setzen.';
+
+  @override
   String get editOnGithub => 'Auf GitHub bearbeiten';
 
   @override
