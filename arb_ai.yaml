@@ -1,3 +1,7 @@
+# Configuration for optional arb_ai translation automation.
+# This file is used only when running arb_ai manually/CI, not during normal
+# Flutter build/run flows. See README section "Optional AI-assisted translation
+# workflow (arb_ai)" for usage.
 provider: gemini
 api_key_env: ARB_AI_API_KEY
 # Optional override if you do not want arb_ai's provider default:

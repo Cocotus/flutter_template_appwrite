@@ -123,7 +123,7 @@ First start shows the **login screen**: register a user (this creates the Appwri
 
 ## 3b. Optional AI-assisted translation workflow (`arb_ai`)
 
-If you want low-ops translation automation for a private repository, this template can use [`arb_ai`](https://pub.dev/packages/arb_ai).
+If you want lightweight translation automation for a private repository, this template can use [`arb_ai`](https://pub.dev/packages/arb_ai).
 
 ### Cost / Gemini note
 
@@ -140,7 +140,7 @@ This repo includes `arb_ai.yaml` at the root, configured for:
 - provider: `gemini`
 - key env var: `ARB_AI_API_KEY`
 
-Before first run, set/verify the model in `arb_ai.yaml` against currently available Gemini models for your account/project (for example: <https://ai.google.dev/gemini-api/docs/models>). This template leaves `model` unset so `arb_ai` can use its default.
+Model override is optional. This template leaves `model` unset so `arb_ai` can use its default. If you want to pin a specific Gemini model, set `model: ...` in `arb_ai.yaml` and verify availability in your account/project (for example: <https://ai.google.dev/gemini-api/docs/models>).
 
 ### One-time local setup
 
@@ -166,7 +166,7 @@ flutter gen-l10n
 Prerequisite: add repository secret `ARB_AI_API_KEY`.
 
 1. Developers add new keys in `lib/l10n/app_en.arb`.
-2. Run the manual workflow from GitHub **Actions** tab → **AI Translate ARB** → **Run workflow** (or run `arb_ai` locally).
+2. Before committing ARB changes, run the manual workflow from GitHub **Actions** tab → **AI Translate ARB** → **Run workflow** (or run `arb_ai` locally).
 3. Commit updated ARBs + generated `app_localizations*.dart`.
 4. CI continues with `flutter analyze`.
 

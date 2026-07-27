@@ -18,15 +18,6 @@ jobs:
           channel: stable
           cache: true
 
-      - name: Require ARB AI API key
-        run: |
-          if [ -z "${ARB_AI_API_KEY}" ]; then
-            echo "Missing ARB_AI_API_KEY secret."
-            exit 1
-          fi
-        env:
-          ARB_AI_API_KEY: ${{ secrets.ARB_AI_API_KEY }}
-
       - name: Install dependencies
         run: flutter pub get
 
