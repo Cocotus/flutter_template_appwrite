@@ -51,7 +51,7 @@ config/app_config.json
 # arb_ai local cache/state file (recreated automatically).
 .arb_ai_state.json
 
-# Generated localizations — do NOT edit manually; regenerated on every build.
+# Generated localizations — do NOT edit manually; regenerate with flutter gen-l10n.
 # app_*.arb files are real source files.
 lib/l10n/app_localizations.dart
 lib/l10n/app_localizations_de.dart
