@@ -99,7 +99,7 @@ Appwrite auth and start directly in the shell.
 
 ## 3. Code generation & first run
 
-Generated files (`*.g.dart`, `*.freezed.dart`, `lib/l10n/app_localizations*.dart`) **are committed**, so the template builds out of the box — and they should stay committed in your app too. The CI `analyze` job does not run `flutter gen-l10n`, so ignoring the localization output breaks CI. Never edit these files by hand; regenerate them instead. After changing models, providers or ARB files:
+Generated files (`*.g.dart`, `*.freezed.dart`, `lib/l10n/app_localizations*.dart`) **are committed**, so the template builds out of the box — and they should stay committed in your app too. Never edit these files by hand; regenerate them instead. After changing models, providers or ARB files:
 
 ```sh
 flutter pub get
@@ -120,6 +120,53 @@ flutter run -d linux   --dart-define-from-file=config/app_config.json
 VS Code users: ready-made launch configurations are in `.vscode/launch.json`. Claude Code users: `.claude/launch.json` serves the same purpose for the in-app browser preview — make sure any configuration you add there also passes `--dart-define-from-file=config/app_config.json`, otherwise the app starts silently on the built-in fallback configuration.
 
 First start shows the **login screen**: register a user (this creates the Appwrite account, logs in and writes the default settings row), then explore Settings → enable **Developer mode** to reveal the Logs view in the sidebar.
+
+## 3b. Optional AI-assisted translation workflow (`arb_ai`)
+
+If you want low-ops translation automation for a private repository, this template can use [`arb_ai`](https://pub.dev/packages/arb_ai).
+
+### Cost / Gemini note
+
+- `arb_ai` currently supports **Gemini** as provider.
+- Gemini is **not included** automatically: you must provide your own API key.
+- Depending on your Google account/project, you may have a free tier, but usage limits and billing rules are controlled by Google and can change.
+
+### Repo setup (already prepared here)
+
+This repo includes `arb_ai.yaml` at the root, configured for:
+- source ARB: `lib/l10n/app_en.arb`
+- target languages: `de`, `pl`, `es`, `fr`, `th`
+- provider: `gemini`
+- key env var: `ARB_AI_API_KEY`
+
+### One-time local setup
+
+```sh
+dart pub global activate arb_ai
+```
+
+### Translate missing/changed keys
+
+```sh
+# preview only (no writes, no API calls)
+dart pub global run arb_ai --dry-run
+
+# generate/update target ARB files
+ARB_AI_API_KEY=your_key_here dart pub global run arb_ai
+
+# regenerate Flutter localization Dart files afterwards
+flutter gen-l10n
+```
+
+### Suggested private-repo workflow
+
+1. Developers add new keys in `lib/l10n/app_en.arb`.
+2. Add repository secret `ARB_AI_API_KEY`.
+3. Run the manual workflow `.github/workflows/arb_ai_translate.yml` (Actions → **AI Translate ARB**) or run `arb_ai` locally.
+4. Commit updated ARBs + generated `app_localizations*.dart`.
+5. CI continues with `flutter analyze`.
+
+This avoids monthly translation platforms and keeps all strings versioned in Git PRs.
 
 ## 4. Logging & debugging
 
@@ -648,7 +695,7 @@ dart run build_runner watch
 
 #### Generated files in the l10n folder
 
-`lib/l10n/app_localizations.dart`, `app_localizations_de.dart`, and `app_localizations_en.dart` are **auto-generated** and must not be edited by hand — only `app_en.arb` and `app_de.arb` are real source files. They **are** checked into Git, deliberately: the CI `analyze` job does not run `flutter gen-l10n`, so a build from a clean checkout needs them present. Regenerate with `flutter gen-l10n` and commit the result.
+`lib/l10n/app_localizations*.dart` files are **auto-generated** and must not be edited by hand. `lib/l10n/app_*.arb` files are the source files (with `app_en.arb` as the template/base locale). Generated localization Dart files **are** checked into Git in this template; regenerate them with `flutter gen-l10n` and commit the result after ARB changes.
 
 #### Accent color: one Dart const, plus the web manifest
 

@@ -48,6 +48,9 @@ app.*.map.json
 # Copy config/app_config.example.json to config/app_config.json instead.
 config/app_config.json
 
+# arb_ai local cache/state file (recreated automatically).
+.arb_ai_state.json
+
 # Generated localizations — do NOT edit manually; regenerated on every build.
 # Only app_en.arb and app_de.arb are real source files.
 lib/l10n/app_localizations.dart
