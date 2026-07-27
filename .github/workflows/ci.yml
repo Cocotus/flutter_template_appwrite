@@ -9,7 +9,7 @@ env:
   FLUTTER_VERSION: 3.44.1
 
 jobs:
-  # Static analysis only — flutter test entfernt, keine Testprojekte mehr nötig.
+  # Static analysis only — no test job; the template ships no test/ directory.
   analyze:
     name: Analyze
     runs-on: ubuntu-latest
@@ -24,6 +24,11 @@ jobs:
         run: flutter pub get
       - name: Generate code (Riverpod/Freezed/JSON)
         run: dart run build_runner build
+      # Unlike `flutter build`, `flutter analyze` does not run gen-l10n itself.
+      # Without this step, analysis uses whatever app_localizations*.dart is
+      # committed and fails as soon as an ARB key is added but not regenerated.
+      - name: Generate localizations
+        run: flutter gen-l10n
       - name: Analyze
         run: flutter analyze
 
