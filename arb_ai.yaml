@@ -1,6 +1,5 @@
 provider: gemini
 api_key_env: ARB_AI_API_KEY
-model: gemini-3.5-flash
 source_arb: lib/l10n/app_en.arb
 targets:
   - de

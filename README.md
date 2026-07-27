@@ -140,7 +140,7 @@ This repo includes `arb_ai.yaml` at the root, configured for:
 - provider: `gemini`
 - key env var: `ARB_AI_API_KEY`
 
-Before first run, verify that the configured model in `arb_ai.yaml` matches a currently available Gemini model for your account/project (for example, check <https://ai.google.dev/gemini-api/docs/models>).
+Before first run, set/verify the model in `arb_ai.yaml` against currently available Gemini models for your account/project (for example: <https://ai.google.dev/gemini-api/docs/models>). This template leaves `model` unset so `arb_ai` can use its default.
 
 ### One-time local setup
 
