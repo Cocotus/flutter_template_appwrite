@@ -140,7 +140,7 @@ This repo includes `arb_ai.yaml` at the root, configured for:
 - provider: `gemini`
 - key env var: `ARB_AI_API_KEY`
 
-Model override is optional. This template leaves `model` unset so `arb_ai` can use its default. If you want to pin a specific Gemini model, set `model: ...` in `arb_ai.yaml` and verify availability in your account/project (for example: <https://ai.google.dev/gemini-api/docs/models>).
+Model override is optional. This template leaves `model` unset so `arb_ai` can use its default. If you want to pin a specific Gemini model, set `model: ...` in `arb_ai.yaml` and verify availability in your account/project using the Gemini API model docs: <https://ai.google.dev/gemini-api/docs/models>.
 
 ### One-time local setup
 
@@ -699,7 +699,9 @@ dart run build_runner watch
 
 #### Generated files in the l10n folder
 
-`lib/l10n/app_localizations*.dart` files are **auto-generated** and must not be edited by hand. `lib/l10n/app_*.arb` files are the source files (with `app_en.arb` as the template/base locale). Generated localization Dart files **are** checked into Git in this template; regenerate them with `flutter gen-l10n` and commit the result after ARB changes.
+`lib/l10n/app_localizations*.dart` files are **auto-generated** and must not be edited by hand.
+`lib/l10n/app_*.arb` files are the source files (with `app_en.arb` as the template/base locale).
+Generated localization Dart files **are** checked into Git in this template. Regenerate them with `flutter gen-l10n` and commit the result after ARB changes.
 
 #### Accent color: one Dart const, plus the web manifest
 
