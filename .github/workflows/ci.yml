@@ -32,8 +32,9 @@ jobs:
       - name: Analyze
         run: flutter analyze
 
-  # Build-Nummer wird automatisch auf github.run_number gesetzt.
-  # Sichtbar in der App links unten im Login-Screen (appVersionProvider).
+  # The build number is set automatically from github.run_number.
+  # Visible in the app at the bottom left of the login screen
+  # (appVersionProvider).
   build-web:
     name: Build web
     runs-on: ubuntu-latest
@@ -57,8 +58,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      # Ubuntu 24.04 (Noble): libwebkit2gtk-4.1-dev (nicht 4.0!) +
-      # libsecret-1-dev für flutter_secure_storage.
+      # Ubuntu 24.04 (Noble): libwebkit2gtk-4.1-dev (NOT 4.0) plus
+      # libsecret-1-dev for flutter_secure_storage.
       - name: Install Linux build prerequisites
         run: |
           sudo apt-get update

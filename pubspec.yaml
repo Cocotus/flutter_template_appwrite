@@ -61,8 +61,12 @@ dependencies:
   flutter_markdown_plus: ^1.0.12
 
 dev_dependencies:
-  flutter_test:
-    sdk: flutter
+  # No flutter_test: this template ships no test/ directory by design
+  # (see AGENTS.md) and nothing imports it. It stays in pubspec.lock as a
+  # transitive dependency of flutter_riverpod, so `package:flutter_test`
+  # still resolves -- but declare it here explicitly if you ever rely on
+  # it directly, e.g. a tool/ script using TestWidgetsFlutterBinding to
+  # rasterize an image, or if you decide your app wants tests.
 
   # Code generation.
   build_runner: ^2.15.0
