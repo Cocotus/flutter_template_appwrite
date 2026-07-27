@@ -78,6 +78,9 @@ cp config/app_config.example.json config/app_config.json
   "APPWRITE_USER_SETTINGS_TABLE_ID": "user_settings",
   "APPWRITE_LOGS_TABLE_ID": "logs",
   "APPWRITE_ENTITLEMENTS_TABLE_ID": "entitlements",
+  "HAS_PREMIUM": true,
+  "HAS_LOGIN": true,
+  "BUY_ME_COFFEE_USERNAME": "",
   "PREMIUM_CHECKOUT_URL": "",
   "PASSWORD_RECOVERY_URL": "http://localhost:8080/reset-password",
   "REMOTE_LOGGING_ENABLED": false,
@@ -86,6 +89,11 @@ cp config/app_config.example.json config/app_config.json
 ```
 
 `APPWRITE_ENTITLEMENTS_TABLE_ID` and `PREMIUM_CHECKOUT_URL` are only needed if you use the premium licensing feature (section 7); leave `PREMIUM_CHECKOUT_URL` empty to keep the buy button disabled.
+
+For freeware/public variants, set `HAS_PREMIUM` to `false` to hide premium
+checkout UI and optionally show the sidebar donate button by setting a
+non-empty `BUY_ME_COFFEE_USERNAME`. Set `HAS_LOGIN` to `false` to bypass
+Appwrite auth and start directly in the shell.
 
 `config/app_config.json` is **gitignored** — no secrets are ever committed. The values are injected at build time via `--dart-define-from-file` (see `lib/config/app_config.dart`).
 
