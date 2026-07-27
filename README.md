@@ -128,7 +128,7 @@ If you want low-ops translation automation for a private repository, this templa
 ### Cost / Gemini note
 
 - This template config (`arb_ai.yaml`) is set up to use **Gemini** as provider.
-- `arb_ai` provider support evolves; check the upstream package docs for the current provider list/version details.
+- `arb_ai` provider support evolves; check the upstream package docs for the current provider list/version details: <https://pub.dev/packages/arb_ai>.
 - Gemini is **not included** automatically: you must provide your own API key.
 - Depending on your Google account/project, you may have a free tier, but usage limits and billing rules are controlled by Google and can change.
 
@@ -163,7 +163,7 @@ flutter gen-l10n
 
 1. Developers add new keys in `lib/l10n/app_en.arb`.
 2. Add repository secret `ARB_AI_API_KEY`.
-3. Run the manual workflow `.github/workflows/arb_ai_translate.yml` (Actions → **AI Translate ARB**) or run `arb_ai` locally.
+3. Run the manual workflow from GitHub **Actions** tab → **AI Translate ARB** → **Run workflow** (or run `arb_ai` locally).
 4. Commit updated ARBs + generated `app_localizations*.dart`.
 5. CI continues with `flutter analyze`.
 
