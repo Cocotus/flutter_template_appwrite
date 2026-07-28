@@ -9,10 +9,24 @@ api_key_env: ARB_AI_API_KEY
 source_arb: lib/l10n/app_en.arb
 targets:
   - de
-  - pl
   - es
   - fr
+  - pt
+  - it
+  - nl
+  - pl
+  - ru
+  - uk
+  - tr
+  - sv
+  - zh
+  - ja
+  - ko
+  - vi
+  - id
   - th
+  - ar
+  - hi
 tone: neutral
 do_not_translate:
   - Flutter

@@ -194,8 +194,12 @@ class SettingsView extends HookConsumerWidget {
     );
   }
 
-  // A modern segmented control instead of a dropdown — with only a handful
-  // of languages, all options stay visible and switching is one click.
+  // A dropdown with one entry per supported language. Labels are always the
+  // English name (never the endonym) with a flag prefix, so the dropdown
+  // itself stays readable even if the user picked a script they can't read.
+  // The key forces a fresh DropdownMenu whenever the code changes from
+  // outside this widget (e.g. settings finish loading from Appwrite),
+  // since DropdownMenu only honors initialSelection on first build.
   Widget _buildLanguageDropdown({
     required AppLocalizations localizations,
     required UserSettings settings,
@@ -205,22 +209,25 @@ class SettingsView extends HookConsumerWidget {
     return ListTile(
       leading: const Icon(Icons.language_outlined),
       title: Text(localizations.language),
-      trailing: SegmentedButton<String>(
-        segments: <ButtonSegment<String>>[
-          for (final String languageCode in supportedLanguageCodes)
-            ButtonSegment<String>(
-              value: languageCode,
-              label: Text(_languageDisplayName(languageCode)),
+      trailing: DropdownMenu<String>(
+        key: ValueKey<String>(settings.languageCode),
+        enabled: !isSaving,
+        enableFilter: true,
+        width: 240,
+        initialSelection: settings.languageCode,
+        dropdownMenuEntries: <DropdownMenuEntry<String>>[
+          for (final LanguageOption option in languageOptions)
+            DropdownMenuEntry<String>(
+              value: option.code,
+              label: option.englishName,
+              leadingIcon: Text(option.flagEmoji),
             ),
         ],
-        selected: <String>{settings.languageCode},
-        showSelectedIcon: false,
-        onSelectionChanged: isSaving
-            ? null
-            : (Set<String> newSelection) {
-                // Single-select mode: the set always holds exactly one code.
-                controller.setLanguageCode(newSelection.first);
-              },
+        onSelected: (String? newCode) {
+          if (newCode != null) {
+            controller.setLanguageCode(newCode);
+          }
+        },
       ),
     );
   }
@@ -269,14 +276,5 @@ class SettingsView extends HookConsumerWidget {
         ),
       ],
     );
-  }
-
-  // Shows each language in its own tongue so users can always find their
-  // language, no matter which one is currently active.
-  String _languageDisplayName(String languageCode) {
-    if (languageCode == 'de') {
-      return 'Deutsch';
-    }
-    return 'English';
   }
 }

@@ -27,6 +27,9 @@ class DonateButton extends StatelessWidget {
       return;
     }
 
+    if (!context.mounted) {
+      return;
+    }
     final ScaffoldMessengerState messenger = ScaffoldMessenger.of(context);
     messenger.showSnackBar(
       const SnackBar(content: Text('Unable to open the donation page.')),

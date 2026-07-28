@@ -54,5 +54,4 @@ config/app_config.json
 # Generated localizations — do NOT edit manually; regenerate with flutter gen-l10n.
 # app_*.arb files are real source files.
 lib/l10n/app_localizations.dart
-lib/l10n/app_localizations_de.dart
-lib/l10n/app_localizations_en.dart
+lib/l10n/app_localizations_*.dart
