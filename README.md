@@ -726,6 +726,78 @@ Two things still bite:
 
 ---
 
+## 11. Hosting on GitHub Pages
+
+`.github/workflows/gh-pages.yml` publishes a live, backend-free demo of the
+template itself to GitHub Pages — useful for showing off a fork before
+anyone sets up their own Appwrite project.
+
+This template's own defaults are `HAS_LOGIN=true` / `HAS_PREMIUM=true` (see
+§2) — it ships expecting a real backend, unlike a freeware fork that sets
+`HAS_LOGIN=false`. Rather than change those defaults, the workflow adds one
+build-time flag on top: `--dart-define=DEMO_MODE_ALLOWED=true`. Visitors
+land on the real login screen and flip its **Demo mode** switch, which
+swaps in the in-memory fakes under `lib/services/demo/` — no Appwrite
+project, no database, no server, and no secrets in the workflow. The
+premium-checkout card still renders (`HAS_PREMIUM=true`), just with its buy
+button disabled, since `PREMIUM_CHECKOUT_URL` is empty by default (§7); the
+donate button stays hidden for the same reason it's hidden in a normal
+build — it only shows when `HAS_PREMIUM=false`.
+
+### One-time repo setup
+
+1. GitHub repo → **Settings → Pages → Build and deployment → Source** →
+   select **GitHub Actions**. Nothing else to configure; the workflow
+   provisions the rest.
+2. Push to `main` (or run the workflow manually from the **Actions** tab →
+   **Deploy web to GitHub Pages** → **Run workflow**).
+3. The site appears at `https://<owner>.github.io/<repo>/`.
+
+### What the workflow does, and why
+
+- **`--base-href=/${{ github.event.repository.name }}/`** — Pages serves a
+  project site from a `/<repo>/` subpath, not `/`; Flutter's web output
+  needs to know that at build time. Derived from the repo name, so it keeps
+  working automatically if you rename your fork.
+- **`.nojekyll`** — GitHub Pages runs Jekyll by default, which ignores
+  dotfile/underscore paths. Cheap insurance even though this build has none
+  that are load-bearing.
+- **`404.html` = a copy of `index.html`** — `main.dart` calls
+  `usePathUrlStrategy()` for clean URLs (`/settings`, not `/#/settings`),
+  which needs the host to fall back to `index.html` for unknown paths (see
+  §6). GitHub Pages has no rewrite rules, but it does serve a custom
+  `404.html` for any unmatched path, so copying the built `index.html`
+  there lets `go_router` take over client-side once the app has loaded.
+- Uses `actions/upload-pages-artifact` + `actions/deploy-pages` (the
+  current GitHub-native flow) instead of pushing to a `gh-pages` branch.
+
+### Custom domain (optional)
+
+Add a `web/CNAME` file containing the domain. Flutter copies everything
+under `web/` verbatim into the build output, so it ships with every
+deploy; point the domain's DNS at GitHub Pages as usual.
+
+### If your fork is a freeware/public app (`HAS_LOGIN=false`)
+
+Skip demo mode entirely: replace `--dart-define=DEMO_MODE_ALLOWED=true` in
+the workflow with `--dart-define=HAS_LOGIN=false` (plus
+`--dart-define=HAS_PREMIUM=false` and, if wanted,
+`--dart-define=BUY_ME_COFFEE_USERNAME=yourslug` for the donate button) — the
+router then skips the login page entirely, exactly like the demo-free setup
+described in `morpatcher_flutter`'s README, a public app built from this
+template.
+
+### If you want the real backend on the public site instead
+
+Drop `--dart-define=DEMO_MODE_ALLOWED=true` and add the `--dart-define`s
+from §2 sourced from repository secrets/variables instead of
+`config/app_config.json`. Not recommended for a public template showcase —
+it exposes your Appwrite project ID and requires registering the Pages
+origin as a Web platform in Appwrite — but it's the same mechanism either
+way.
+
+---
+
 ## License
 
 [MIT](LICENSE)
