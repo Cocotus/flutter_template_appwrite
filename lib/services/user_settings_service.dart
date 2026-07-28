@@ -45,16 +45,16 @@ class UserSettingsController extends _$UserSettingsController {
   /// defaults are created remotely instead.
   //
   // NOTE (hasLogin == false / freeware mode):
-  // When AppConfig.hasLogin is false, no Appwrite session exists. In that
-  // mode the UserSettingsController still works correctly because it stores
-  // settings in its Riverpod state (in-memory); the Appwrite read/write calls
-  // are simply never reached — the router never triggers an auth flow and
-  // the service is never called with a real user ID. Settings therefore
-  // survive only for the current app session. This is intentional: without a
-  // user identity there is nothing to key persistent storage on.
-  // If you need settings to survive app restarts in freeware mode, replace
-  // the Appwrite calls with shared_preferences writes (already in pubspec.yaml)
-  // keyed on a fixed local key instead of the user ID.
+  // When AppConfig.hasLogin is false, no Appwrite session exists, so this
+  // method and createDefaultsForCurrentUser() are simply never called — the
+  // router never triggers an auth flow and nothing calls this service with a
+  // real user ID. That does NOT mean settings are session-only, though:
+  // build() and save() (below) already read/write a fixed-key local
+  // shared_preferences cache regardless of login state — that path is not
+  // keyed on the user ID at all — so theme/language/accent/etc. already
+  // survive app restarts (and, on web, closing the tab) in freeware mode out
+  // of the box, via PreferencesService. Only the Appwrite round-trip is
+  // skipped here.
   Future<void> loadForCurrentUser() async {
     final LoggerService logger = ref.read(loggerServiceProvider);
     final String userId = await _requireCurrentUserId();

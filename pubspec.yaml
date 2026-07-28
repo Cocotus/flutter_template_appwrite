@@ -60,6 +60,10 @@ dependencies:
   # discontinued flutter_markdown.
   flutter_markdown_plus: ^1.0.12
 
+  # Renders the official Buy Me a Coffee brand assets (assets/images/bmc-*.svg)
+  # in the sidebar donate button, instead of recreating the logo by hand.
+  flutter_svg: ^2.2.1
+
 dev_dependencies:
   # No flutter_test: this template ships no test/ directory by design
   # (see AGENTS.md) and nothing imports it. It stays in pubspec.lock as a
