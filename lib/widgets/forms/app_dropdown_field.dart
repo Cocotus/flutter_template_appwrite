@@ -49,6 +49,10 @@ class AppDropdownField<T> extends StatelessWidget {
     return DropdownButtonFormField<T>(
       initialValue: value,
       onChanged: onChanged,
+      // Without this, a long option label can overflow the field instead
+      // of ellipsizing once the field is narrower than the widest label
+      // (e.g. placed side by side with another field).
+      isExpanded: true,
       decoration: InputDecoration(
         labelText: label,
         prefixIcon: icon == null ? null : Icon(icon),
@@ -57,7 +61,7 @@ class AppDropdownField<T> extends StatelessWidget {
         for (final AppDropdownOption<T> option in options)
           DropdownMenuItem<T>(
             value: option.value,
-            child: Text(option.label),
+            child: Text(option.label, overflow: TextOverflow.ellipsis),
           ),
       ],
     );

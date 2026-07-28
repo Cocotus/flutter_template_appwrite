@@ -98,12 +98,15 @@ class AppSidebar extends ConsumerWidget {
       _NavSection(
         label: localizations.menuAccount,
         items: <_NavItem>[
-          _NavItem(
-            branchIndex: 2,
-            icon: Icons.person_outline,
-            selectedIcon: Icons.person,
-            label: localizations.profile,
-          ),
+          // No Appwrite session exists in freeware/public mode, so the
+          // profile page (email, logout) would have nothing to show.
+          if (AppConfig.hasLogin)
+            _NavItem(
+              branchIndex: 2,
+              icon: Icons.person_outline,
+              selectedIcon: Icons.person,
+              label: localizations.profile,
+            ),
           _NavItem(
             branchIndex: 1,
             icon: Icons.settings_outlined,
@@ -367,6 +370,12 @@ class AppSidebar extends ConsumerWidget {
     AppLocalizations localizations,
     UserSettings settings,
   ) {
+    // No Appwrite session in freeware/public mode: no email, and logout
+    // has nothing to sign out of — the whole footer would be dead UI.
+    if (!AppConfig.hasLogin) {
+      return const SizedBox.shrink();
+    }
+
     final String email =
         ref.watch(currentUserProvider).value?.email ?? '';
     final String displayName =
