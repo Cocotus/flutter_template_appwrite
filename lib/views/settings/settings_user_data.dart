@@ -8,7 +8,7 @@ import 'package:flutter_template_appwrite/services/backup_service.dart';
 import 'package:flutter_template_appwrite/services/logger_service.dart';
 import 'package:flutter_template_appwrite/services/user_data_service.dart';
 import 'package:flutter_template_appwrite/widgets/app_snackbar.dart';
-import 'package:flutter_template_appwrite/widgets/buttons/app_buttons.dart';
+import 'package:flutter_template_appwrite/widgets/buttons/app_secondary_button.dart';
 import 'package:flutter_template_appwrite/widgets/section_header.dart';
 
 /// The "My data" settings section: what the user has created, and how to move

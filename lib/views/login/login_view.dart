@@ -11,7 +11,7 @@ import 'package:flutter_template_appwrite/services/theme_service.dart';
 import 'package:flutter_template_appwrite/utils/auth_error_mapper.dart';
 import 'package:flutter_template_appwrite/views/login/login_controller.dart';
 import 'package:flutter_template_appwrite/widgets/app_snackbar.dart';
-import 'package:flutter_template_appwrite/widgets/buttons/app_buttons.dart';
+import 'package:flutter_template_appwrite/widgets/buttons/app_primary_button.dart';
 import 'package:flutter_template_appwrite/widgets/forms/app_password_field.dart';
 import 'package:flutter_template_appwrite/widgets/forms/app_switch_tile.dart';
 import 'package:flutter_template_appwrite/widgets/forms/app_text_field.dart';

@@ -12,7 +12,8 @@ import 'package:flutter_template_appwrite/services/license/license_service.dart'
 import 'package:flutter_template_appwrite/services/license/premium_status.dart';
 import 'package:flutter_template_appwrite/views/profile/profile_controller.dart';
 import 'package:flutter_template_appwrite/widgets/app_snackbar.dart';
-import 'package:flutter_template_appwrite/widgets/buttons/app_buttons.dart';
+import 'package:flutter_template_appwrite/widgets/buttons/app_primary_button.dart';
+import 'package:flutter_template_appwrite/widgets/buttons/app_secondary_button.dart';
 import 'package:flutter_template_appwrite/widgets/error_display.dart';
 import 'package:flutter_template_appwrite/widgets/loading_indicator.dart';
 import 'package:flutter_template_appwrite/widgets/user_avatar.dart';

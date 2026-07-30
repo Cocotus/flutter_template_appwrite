@@ -12,7 +12,7 @@ import 'package:flutter_template_appwrite/views/settings/settings_controller.dar
 import 'package:flutter_template_appwrite/views/settings/settings_state.dart';
 import 'package:flutter_template_appwrite/views/settings/settings_user_data.dart';
 import 'package:flutter_template_appwrite/widgets/app_snackbar.dart';
-import 'package:flutter_template_appwrite/widgets/buttons/app_buttons.dart';
+import 'package:flutter_template_appwrite/widgets/buttons/app_primary_button.dart';
 import 'package:flutter_template_appwrite/widgets/forms/app_switch_tile.dart';
 import 'package:flutter_template_appwrite/widgets/forms/app_text_field.dart';
 import 'package:flutter_template_appwrite/widgets/section_header.dart';
