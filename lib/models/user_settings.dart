@@ -7,14 +7,19 @@ part 'user_settings.g.dart';
 
 /// Per-user application settings.
 ///
-/// Exactly one settings row exists per user in the Appwrite `user_settings`
-/// table; the row ID equals the Appwrite user ID (see `DatabaseService`).
-/// The same JSON shape is also cached locally in `shared_preferences` so the
-/// UI can show the last known settings instantly while the remote row loads.
+/// Stored locally in `shared_preferences` — that copy is authoritative and is
+/// what the app reads at startup. When a build ships with `HAS_LOGIN=true` the
+/// same JSON also goes into the user's Appwrite account-preferences object, so
+/// signing in on another machine brings it along (see `CloudSyncService`).
+///
+/// This is **configuration**: a fixed, small set of scalars the user picks from
+/// a form. Anything the user *creates* — and that therefore grows without
+/// bound — belongs in [UserData] instead, which has a different storage route
+/// for exactly that reason.
 ///
 /// Every field has a default value (`@Default`) so that `fromJson` tolerates
-/// rows or caches that are missing a column, e.g. after adding a new setting
-/// to a template that is already in production.
+/// stored copies that are missing a key, e.g. after adding a new setting to a
+/// build that is already in production.
 @freezed
 abstract class UserSettings with _$UserSettings {
   /// Creates a [UserSettings] instance.

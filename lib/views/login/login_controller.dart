@@ -2,9 +2,10 @@ import 'dart:async';
 
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
-import 'package:flutter_template_appwrite/services/auth_service.dart';
+import 'package:flutter_template_appwrite/services/auth/auth_service.dart';
+import 'package:flutter_template_appwrite/services/auth/current_user.dart';
+import 'package:flutter_template_appwrite/services/cloud_sync/cloud_sync_controller.dart';
 import 'package:flutter_template_appwrite/services/logger_service.dart';
-import 'package:flutter_template_appwrite/services/user_settings_service.dart';
 import 'package:flutter_template_appwrite/utils/redact_email.dart';
 
 part 'login_controller.g.dart';
@@ -46,10 +47,9 @@ class LoginController extends _$LoginController {
       // Let the router guard know that a session now exists.
       await ref.read(currentUserProvider.notifier).refresh();
 
-      // Load this user's settings (theme, language, ...) from Appwrite.
-      final UserSettingsController settingsController =
-          ref.read(userSettingsControllerProvider.notifier);
-      await settingsController.loadForCurrentUser();
+      // One of the three moments this app talks to Appwrite: bring down this
+      // user's settings and user data (see CloudSync).
+      await ref.read(cloudSyncProvider.notifier).pull();
 
       state = const AsyncValue<void>.data(null);
     } catch (error, stackTrace) {
@@ -86,10 +86,9 @@ class LoginController extends _$LoginController {
       // Let the router guard know that a session now exists.
       await ref.read(currentUserProvider.notifier).refresh();
 
-      // A brand-new user has no settings row yet — create the defaults.
-      final UserSettingsController settingsController =
-          ref.read(userSettingsControllerProvider.notifier);
-      await settingsController.createDefaultsForCurrentUser();
+      // A brand-new account has nothing stored yet, so this seeds it from the
+      // local state rather than pulling emptiness down over it.
+      await ref.read(cloudSyncProvider.notifier).push();
 
       logger.info('Register success (${redactEmail(email)})');
       state = const AsyncValue<void>.data(null);

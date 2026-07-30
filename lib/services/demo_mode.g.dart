@@ -1,6 +1,6 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 
-part of 'demo_mode_service.dart';
+part of 'demo_mode.dart';
 
 // **************************************************************************
 // RiverpodGenerator
@@ -11,13 +11,13 @@ part of 'demo_mode_service.dart';
 /// The effective demo-mode state for the whole app.
 ///
 /// When `true`, the service layer swaps in the in-memory fakes
-/// (`DemoAuthService` / `DemoDatabaseService`) instead of the Appwrite-backed
+/// (`DemoAuthService` / `DemoCloudSyncService`) instead of the Appwrite-backed
 /// implementations, so every view works without a backend or a login.
 ///
 /// The value is `persisted user choice AND [demoModeIsAllowed]`: the stored
 /// preference can never turn demo mode on in a build that does not allow it.
 ///
-/// Kept alive because [authServiceProvider] and [databaseServiceProvider]
+/// Kept alive because [authServiceProvider] and [cloudSyncServiceProvider]
 /// watch it: flipping it rebuilds those services (and, transitively,
 /// `currentUserProvider` and the router guard), so the app switches between
 /// real and demo backends without a restart.
@@ -28,13 +28,13 @@ final demoModeProvider = DemoModeProvider._();
 /// The effective demo-mode state for the whole app.
 ///
 /// When `true`, the service layer swaps in the in-memory fakes
-/// (`DemoAuthService` / `DemoDatabaseService`) instead of the Appwrite-backed
+/// (`DemoAuthService` / `DemoCloudSyncService`) instead of the Appwrite-backed
 /// implementations, so every view works without a backend or a login.
 ///
 /// The value is `persisted user choice AND [demoModeIsAllowed]`: the stored
 /// preference can never turn demo mode on in a build that does not allow it.
 ///
-/// Kept alive because [authServiceProvider] and [databaseServiceProvider]
+/// Kept alive because [authServiceProvider] and [cloudSyncServiceProvider]
 /// watch it: flipping it rebuilds those services (and, transitively,
 /// `currentUserProvider` and the router guard), so the app switches between
 /// real and demo backends without a restart.
@@ -42,13 +42,13 @@ final class DemoModeProvider extends $NotifierProvider<DemoMode, bool> {
   /// The effective demo-mode state for the whole app.
   ///
   /// When `true`, the service layer swaps in the in-memory fakes
-  /// (`DemoAuthService` / `DemoDatabaseService`) instead of the Appwrite-backed
+  /// (`DemoAuthService` / `DemoCloudSyncService`) instead of the Appwrite-backed
   /// implementations, so every view works without a backend or a login.
   ///
   /// The value is `persisted user choice AND [demoModeIsAllowed]`: the stored
   /// preference can never turn demo mode on in a build that does not allow it.
   ///
-  /// Kept alive because [authServiceProvider] and [databaseServiceProvider]
+  /// Kept alive because [authServiceProvider] and [cloudSyncServiceProvider]
   /// watch it: flipping it rebuilds those services (and, transitively,
   /// `currentUserProvider` and the router guard), so the app switches between
   /// real and demo backends without a restart.
@@ -84,13 +84,13 @@ String _$demoModeHash() => r'bbafe07a543fb13ecebc72571346b39805d7f177';
 /// The effective demo-mode state for the whole app.
 ///
 /// When `true`, the service layer swaps in the in-memory fakes
-/// (`DemoAuthService` / `DemoDatabaseService`) instead of the Appwrite-backed
+/// (`DemoAuthService` / `DemoCloudSyncService`) instead of the Appwrite-backed
 /// implementations, so every view works without a backend or a login.
 ///
 /// The value is `persisted user choice AND [demoModeIsAllowed]`: the stored
 /// preference can never turn demo mode on in a build that does not allow it.
 ///
-/// Kept alive because [authServiceProvider] and [databaseServiceProvider]
+/// Kept alive because [authServiceProvider] and [cloudSyncServiceProvider]
 /// watch it: flipping it rebuilds those services (and, transitively,
 /// `currentUserProvider` and the router guard), so the app switches between
 /// real and demo backends without a restart.

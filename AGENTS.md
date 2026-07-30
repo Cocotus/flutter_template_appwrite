@@ -36,6 +36,7 @@ during a session. See §1 and §11 for specifics.
 - [11. Localization](#11-localization)
 - [12. Hooks & reactive pitfalls](#12-hooks--reactive-pitfalls)
 - [13. Workflow expectations for the assistant](#13-workflow-expectations-for-the-assistant)
+- [14. Persistence — user settings vs. user data](#14-persistence--user-settings-vs-user-data)
 - [Short DON'T list](#short-dont-list)
 
 ---
@@ -199,9 +200,34 @@ return Column(children: children);
 
 ## 2. Architecture — View / Controller / Service / Model
 
+### File naming convention
+
+**Dart files MUST be named after one of their public classes.** A file contains
+exactly one public class, which is the filename in `snake_case`. Examples:
+
+- Class `AppPrimaryButton` → file `app_primary_button.dart`
+- Class `UserSettings` → file `user_settings.dart`
+- Class `LoginController` → file `login_controller.dart`
+
+**Generated files** (`.freezed.dart`, `.g.dart`, `.config.dart`) are excluded
+from this rule — they follow the source file's name automatically via `part`
+statements.
+
+**Models (data/entity classes) belong in `lib/models/`** — even if they're
+referenced only in one place. This includes all Freezed classes and plain data
+classes. Do NOT scatter models across services or widgets. Examples:
+
+- ✅ Class `UserData` → `lib/models/user_data.dart` (or
+  `lib/models/user_data/user_data.dart` if UserData has related types)
+- ✅ Class `LanguageOption` → `lib/models/language_option.dart`
+- ❌ NOT in `lib/widgets/` even if only a widget uses it initially
+
+---
+
 Four layers under `lib/`:
 
-- **`lib/models/`** — immutable data models only (Freezed + `fromJson`/`toJson`).
+- **`lib/models/`** — immutable data models only (Freezed + `fromJson`/`toJson`,
+  and plain data classes). See below for folder structure.
 - **`lib/views/`** — UI widgets, one subfolder per feature (`views/login/`, …).
   UI + wiring only, **no business logic**.
 - **`lib/controllers/`** (or an `xyz_controller.dart` sitting next to its
@@ -210,7 +236,8 @@ Four layers under `lib/`:
 - **`lib/services/`** — **logic shared across many views** (auth, data,
   theme, logging, config, cross-cutting state), provided as Riverpod
   providers, as singletons where sensible.
-- **`lib/widgets/`** — reusable, shared widgets (see §4).
+- **`lib/widgets/`** — reusable, shared widgets (see §4). These are **pure
+  UI components, not data models**; any data they need comes from parameters.
 - **`lib/theme/`** — centralized theming (see §5).
 
 **Rule of thumb:** *Controller* = logic **for one view**. *Service* = logic
@@ -223,6 +250,46 @@ separated and easily swappable (e.g. demo mode, see `services/demo/` and
 function provider. Only make it a notifier class if it actually holds state.
 
 ---
+
+### Grouping related files into subfolders
+
+`lib/models/` and `lib/services/` start flat (one file per concern) and stay
+that way as long as one file is enough. **The moment a file declares more than
+one top-level `class`/`abstract class`/`enum`, split it**: one file per type,
+grouped into a subfolder named after the concern. Apply this consistently —
+do not keep a multi-type file around because the extra type is "small" or
+"only used in one place"; a reader should never have to scroll past an
+unrelated class to find the one they came for.
+
+- **Models.** A model file with one `@freezed` class stays a single file
+  (`models/user_settings.dart`). The moment it declares a second type —
+  another `@freezed` class, or an `enum` that isn't a single class's own
+  companion — give it a folder: `models/user_data/` containing `user_data.dart`
+  (the root document) plus one file per entity. Each file keeps its own
+  `part '....freezed.dart'` / `part '....g.dart'`. A free top-level function
+  that belongs conceptually to one type lives in that type's file, not in a
+  separate one.
+
+- **Services.** The same threshold applies: the moment a service file declares
+  a second class, split it into a subfolder — `services/auth/` with
+  `auth_service.dart` (the plain Appwrite wrapper) and `current_user.dart` (the
+  stateful controller that watches it); `services/license/` with
+  `license_service.dart` and `premium_status.dart`; `services/remote_log/` with
+  `remote_log_sink.dart` (the interface), `appwrite_log_sink.dart` and
+  `remote_log_talker_observer.dart`; `services/cloud_sync/` with
+  `cloud_sync_service.dart` and `cloud_sync_controller.dart`. The same applies
+  to a family of implementations behind one interface.
+
+  A generated `*.g.dart` / `*.freezed.dart` companion is not a second file for
+  this purpose — it is build output, not something anyone reads or maintains
+  by hand.
+
+- **Don't introduce a barrel file.** Splitting a model or service into a
+  folder means every import site names the specific file it needs
+  (`package:app/models/user_data/favorite_entry.dart`), not a single
+  re-exporting `user_data.dart` that hides which file actually defines what.
+  That indirection is exactly the kind of abstraction §0 asks you to avoid
+  adding without a real need.
 
 ## 3. State management — Riverpod (code-gen) + Hooks
 
@@ -370,13 +437,13 @@ database**:
 - All backend access goes through **service interfaces** (§2). For every
   interface with network/DB access (auth, database/repository, license, …)
   there is an **in-memory fake implementation** under `lib/services/demo/`
-  (here: `DemoAuthService`, `DemoDatabaseService`, `DemoLicenseService`) that
+  (here: `DemoAuthService`, `DemoCloudSyncService`, `DemoLicenseService`) that
   returns fixed, plausible demo data instead of making real requests.
 - A central **`demoModeProvider`** (`@Riverpod(keepAlive: true)`, see
   [`demo_mode_service.dart`](lib/services/demo_mode_service.dart)) holds the
   toggle, persists the choice, and is itself gated by a compile-time flag
   (`kDebugMode` or `--dart-define`). The service providers
-  (`authServiceProvider`, `databaseServiceProvider`, …) `watch` it and return
+  (`authServiceProvider`, `cloudSyncServiceProvider`, …) `watch` it and return
   either the real or the fake implementation depending on its state —
   controllers never notice, they only know the interface (§2).
 - **The toggle sits visibly on the login screen** (a switch/toggle labeled
@@ -461,6 +528,8 @@ Preferred control/event handling from the UI:
 
 ---
 
+---
+
 ## 13. Workflow expectations for the assistant
 
 - After changing sources for generated code (Freezed/JSON/Riverpod), run
@@ -477,6 +546,96 @@ Preferred control/event handling from the UI:
   without a clear reason and (ideally) the user's sign-off.
 
 ---
+
+---
+
+## 14. Persistence — user settings vs. user data
+
+Two kinds of stored data, and they are **not** the same thing. Getting this
+split right at the start is what keeps a growing app from painting itself into
+a corner, so decide which bucket a new field belongs in before writing it.
+
+| | **User settings** | **User data** |
+|---|---|---|
+| What it is | Configuration the user picks from a form | Content the user creates over time |
+| Examples | theme, language, accent, feature toggles | notes, bookmarks, journal entries, drafts |
+| Size | fixed, small, a handful of scalars | unbounded in principle |
+| Model | `UserSettings` | `UserData` |
+| Remote home | Appwrite **account preferences** (64 kB cap) | Appwrite **Storage**, one file per user |
+
+**Split by growth, not by importance.** A settings model that grows a *list* of
+user-created entries has become user data and must move; keeping it in
+preferences works right up until a heavy user hits the 64 kB limit and their
+save starts failing.
+
+**Every app gets a `UserData` model, even an empty-looking one.** It is far
+cheaper to ship the slot unused than to retrofit a second store later.
+
+### The rules
+
+- **`shared_preferences` is the authoritative store, always.** Both models are
+  read from it at startup (synchronously, so no view handles a loading state
+  for them) and written back on every change. The app must work fully with the
+  network unplugged and with `HAS_LOGIN=false`.
+- **Appwrite is a sync layer touched at exactly three moments**, all of them
+  user-initiated: **pull on login**, **push on the settings Save button**,
+  **push on logout**. The settings Save button is always pressable (no
+  "unsaved changes" gate), because it doubles as the manual resync/retry
+  action, next to a visible "Last synced …" line so the state of the cloud
+  copy is never a mystery.
+- **No background writers.** No debounce timer that reaches the network, no
+  `ref.listen` that persists, no mirror file written after every mutation, no
+  save-on-widget-event. If a maintainer has to trace an event graph to answer
+  "when does this get saved?", the design is wrong.
+- **Settings pages are forms.** Controls edit a draft (`SettingsDraft`); a
+  single **Save** button commits it. There is deliberately **no Cancel button** —
+  leaving the page discards the draft, which is what an auto-dispose draft
+  provider gives for free. This is the one place where auto-dispose is the
+  feature rather than the hazard (§3).
+- **Direct one-tap actions are exempt.** A theme toggle in the app bar or a
+  sidebar collapse button is not a form field; those persist immediately.
+- **File import/export is a button, never a listener.** One `BackupService`
+  assembles and applies the whole document, and file/clipboard/cloud all use
+  the same serialization — so "export, reinstall, import" and "sign in on
+  another machine" exercise one code path.
+
+### Backup container pattern
+
+**Use a general-purpose `SettingsBackup` container** (not app-specific like
+`AppBackup`) for serialized backups. A `SettingsBackup` always contains:
+
+- **`userSettings`** (`UserSettings`) — app configuration (theme, language, etc.)
+- **`userData`** (`UserData`) — user-created content (notes, bookmarks, etc.)
+- **Optional app-specific fields** — project may add custom settings as needed,
+  so the same backup class works across different projects.
+
+This way, a user can **reinstall on a different device or different app** and
+get back their core settings and data without code changes. Export the
+container via `BackupService.exportToFile()` / `importFromFile()` /
+`copyToClipboard()` / `pasteFromClipboard()`, all exercising the same JSON
+serialization path.
+- **Never a table for either.** Preferences have no schema to forget; a bucket
+  has no size ceiling to design around. A table is only right when something is
+  actually *queried* — nothing here ever is. TablesDB stays for genuinely
+  queryable, cross-user data (the `logs` and `entitlements` tables).
+- **`HAS_LOGIN=false` means no Appwrite at all.** `appwriteServiceProvider`
+  throws when read in such a build, so the rule is enforced rather than
+  documented.
+
+### Appwrite specifics worth knowing
+
+- `account.updatePrefs(prefs:)` **replaces** the whole object; there is no
+  partial update. Store each model as a **JSON string** under its own key, so
+  the SDK's own serialization can never reshape a nested object.
+- `storage.updateFile` changes **only** a file's name and permissions, never
+  its contents. Overwriting is `deleteFile` (swallow the 404) then
+  `createFile`.
+- Use `InputFile.fromBytes`, not `fromPath` — `fromPath` has no web
+  implementation.
+- Give the user-data file **`fileId == userId`**, so reading it back is a
+  direct fetch and never a query.
+- A 404 on either store means "nothing synced yet" — a normal state for a new
+  account, not an error.
 
 ## Short DON'T list
 
@@ -500,3 +659,8 @@ Preferred control/event handling from the UI:
   other than English (§1, §11).
 - ❌ Secrets/config IDs checked into source.
 - ❌ Runtime-only flags that can bypass authentication in a production build.
+- ❌ Saving a settings value on a widget event; any background writer that
+  persists on a timer or a `ref.listen`; a mirror/backup file written
+  automatically rather than from a button (§14).
+- ❌ An Appwrite table for user settings or user data — preferences and a
+  Storage bucket, respectively (§14).

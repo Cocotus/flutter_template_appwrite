@@ -1,7 +1,7 @@
 import 'package:appwrite/appwrite.dart';
 import 'package:appwrite/models.dart' as appwrite_models;
 
-import 'package:flutter_template_appwrite/services/auth_service.dart';
+import 'package:flutter_template_appwrite/services/auth/auth_service.dart';
 import 'package:flutter_template_appwrite/services/demo/demo_data.dart';
 
 /// In-memory [AuthService] used when demo mode is active.

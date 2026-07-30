@@ -3,10 +3,13 @@ import 'dart:async';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 import 'package:flutter_template_appwrite/config/app_config.dart';
-import 'package:flutter_template_appwrite/services/auth_service.dart';
-import 'package:flutter_template_appwrite/services/demo_mode_service.dart';
+import 'package:flutter_template_appwrite/services/auth/auth_service.dart';
+import 'package:flutter_template_appwrite/services/auth/current_user.dart';
+import 'package:flutter_template_appwrite/services/cloud_sync/cloud_sync_controller.dart';
+import 'package:flutter_template_appwrite/services/demo_mode.dart';
 import 'package:flutter_template_appwrite/services/logger_service.dart';
 import 'package:flutter_template_appwrite/services/preferences_service.dart';
+import 'package:flutter_template_appwrite/services/user_data_service.dart';
 import 'package:flutter_template_appwrite/services/user_settings_service.dart';
 
 part 'profile_controller.g.dart';
@@ -42,6 +45,12 @@ class ProfileController extends _$ProfileController {
       // session must NOT hit Appwrite.
       final bool wasDemoMode = ref.read(demoModeProvider);
 
+      // Last chance to save this session's work remotely. A failure here is
+      // logged by CloudSync itself and must not block the logout — being
+      // unable to reach the server should never trap someone in a session.
+      final CloudSync cloudSync = ref.read(cloudSyncProvider.notifier);
+      await cloudSync.push();
+
       final AuthService authService = ref.read(authServiceProvider);
       await authService.logout();
 
@@ -51,12 +60,15 @@ class ProfileController extends _$ProfileController {
         await ref.read(demoModeProvider.notifier).set(enabled: false);
       }
 
-      // Remove the previous user's cached settings so the next user on
-      // this machine starts from defaults, then reset the in-memory state.
+      // Remove the previous user's data so the next user on this machine
+      // starts from defaults, then reset the in-memory state.
       final PreferencesService preferences =
           ref.read(preferencesServiceProvider);
       await preferences.clearCachedUserSettings();
-      ref.invalidate(userSettingsControllerProvider);
+      await preferences.clearUserData();
+      ref.invalidate(userSettingsServiceProvider);
+      ref.invalidate(userDataServiceProvider);
+      await cloudSync.forgetLastSync();
 
       logger.info('Logout success, session deleted');
 

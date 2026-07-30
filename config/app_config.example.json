@@ -2,7 +2,7 @@
   "APPWRITE_ENDPOINT": "https://cloud.appwrite.io/v1",
   "APPWRITE_PROJECT_ID": "your-project-id",
   "APPWRITE_DATABASE_ID": "app",
-  "APPWRITE_USER_SETTINGS_TABLE_ID": "user_settings",
+  "APPWRITE_USER_DATA_BUCKET_ID": "user_data",
   "APPWRITE_LOGS_TABLE_ID": "logs",
   "APPWRITE_ENTITLEMENTS_TABLE_ID": "entitlements",
   "HAS_PREMIUM": true,

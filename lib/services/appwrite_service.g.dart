@@ -12,6 +12,12 @@ part of 'appwrite_service.dart';
 ///
 /// Kept alive for the whole app lifetime: the client owns the session and
 /// must not be re-created between views.
+///
+/// Throws a [StateError] when read in a build with `HAS_LOGIN=false`. In that
+/// profile the app has no user identity, so nothing may talk to Appwrite at
+/// all — settings and user data live purely in `shared_preferences`. Failing
+/// loudly here turns that rule into something the code guarantees rather than
+/// something a comment asks for.
 
 @ProviderFor(appwriteService)
 final appwriteServiceProvider = AppwriteServiceProvider._();
@@ -20,6 +26,12 @@ final appwriteServiceProvider = AppwriteServiceProvider._();
 ///
 /// Kept alive for the whole app lifetime: the client owns the session and
 /// must not be re-created between views.
+///
+/// Throws a [StateError] when read in a build with `HAS_LOGIN=false`. In that
+/// profile the app has no user identity, so nothing may talk to Appwrite at
+/// all — settings and user data live purely in `shared_preferences`. Failing
+/// loudly here turns that rule into something the code guarantees rather than
+/// something a comment asks for.
 
 final class AppwriteServiceProvider
     extends
@@ -29,6 +41,12 @@ final class AppwriteServiceProvider
   ///
   /// Kept alive for the whole app lifetime: the client owns the session and
   /// must not be re-created between views.
+  ///
+  /// Throws a [StateError] when read in a build with `HAS_LOGIN=false`. In that
+  /// profile the app has no user identity, so nothing may talk to Appwrite at
+  /// all — settings and user data live purely in `shared_preferences`. Failing
+  /// loudly here turns that rule into something the code guarantees rather than
+  /// something a comment asks for.
   AppwriteServiceProvider._()
     : super(
         from: null,
@@ -62,4 +80,4 @@ final class AppwriteServiceProvider
   }
 }
 
-String _$appwriteServiceHash() => r'65304aa7dccea86d796f658507547bf573d47bb6';
+String _$appwriteServiceHash() => r'781f5fd572fed549a5f09538b13dbf8288c1b44e';

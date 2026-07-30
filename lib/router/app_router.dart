@@ -6,7 +6,7 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:talker_flutter/talker_flutter.dart';
 
 import 'package:flutter_template_appwrite/config/app_config.dart';
-import 'package:flutter_template_appwrite/services/auth_service.dart';
+import 'package:flutter_template_appwrite/services/auth/current_user.dart';
 import 'package:flutter_template_appwrite/services/logger_service.dart';
 import 'package:flutter_template_appwrite/views/about/about_view.dart';
 import 'package:flutter_template_appwrite/views/help/help_view.dart';

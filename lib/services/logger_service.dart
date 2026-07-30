@@ -2,7 +2,8 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:talker_flutter/talker_flutter.dart';
 
 import 'package:flutter_template_appwrite/config/app_config.dart';
-import 'package:flutter_template_appwrite/services/remote_log_sink.dart';
+import 'package:flutter_template_appwrite/services/remote_log/appwrite_log_sink.dart';
+import 'package:flutter_template_appwrite/services/remote_log/remote_log_talker_observer.dart';
 
 part 'logger_service.g.dart';
 
@@ -63,6 +64,11 @@ class LoggerService {
 /// forwards error/fatal events to the Appwrite `logs` table. All other
 /// levels stay local on purpose (cost and noise on a hosted backend).
 ///
+/// The [AppConfig.hasLogin] half of the condition matters: a build without
+/// login constructs no Appwrite client at all, so attaching the sink there
+/// would mean every logged error quietly failing to send. Requiring both flags
+/// keeps "no login means no Appwrite" true without exception.
+///
 /// `main.dart` creates the Talker instance itself (it needs it for the
 /// global error hooks and the Riverpod observer before the first provider
 /// is ever read) and injects it here via a provider override.
@@ -70,7 +76,7 @@ LoggerService createLoggerService({
   required Ref ref,
   required Talker talker,
 }) {
-  if (AppConfig.remoteLoggingEnabled) {
+  if (AppConfig.remoteLoggingEnabled && AppConfig.hasLogin) {
     final AppwriteLogSink remoteSink = AppwriteLogSink(ref: ref);
     talker.configure(observer: RemoteLogTalkerObserver(sink: remoteSink));
   }

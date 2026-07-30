@@ -4,9 +4,9 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 
 import 'package:flutter_template_appwrite/l10n/app_localizations.dart';
 import 'package:flutter_template_appwrite/services/app_version_service.dart';
-import 'package:flutter_template_appwrite/services/auth_service.dart';
+import 'package:flutter_template_appwrite/services/auth/current_user.dart';
 import 'package:flutter_template_appwrite/services/demo/demo_data.dart';
-import 'package:flutter_template_appwrite/services/demo_mode_service.dart';
+import 'package:flutter_template_appwrite/services/demo_mode.dart';
 import 'package:flutter_template_appwrite/services/theme_service.dart';
 import 'package:flutter_template_appwrite/utils/auth_error_mapper.dart';
 import 'package:flutter_template_appwrite/views/login/login_controller.dart';
@@ -451,7 +451,7 @@ class LoginView extends HookConsumerWidget {
 
   // Theme switch in the top-right corner. Before login the choice is
   // persisted to the local cache only; after login the settings row in
-  // Appwrite takes over (see UserSettingsController).
+  // Appwrite takes over (see UserSettingsService).
   Widget _buildThemeSwitch(
     BuildContext context,
     WidgetRef ref,

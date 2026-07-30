@@ -5,7 +5,7 @@ import 'package:go_router/go_router.dart';
 import 'package:flutter_template_appwrite/l10n/app_localizations.dart';
 import 'package:flutter_template_appwrite/models/user_settings.dart';
 import 'package:flutter_template_appwrite/router/app_router.dart';
-import 'package:flutter_template_appwrite/services/locale_service.dart';
+import 'package:flutter_template_appwrite/services/app_locale_provider.dart';
 import 'package:flutter_template_appwrite/services/theme_service.dart';
 import 'package:flutter_template_appwrite/services/user_settings_service.dart';
 import 'package:flutter_template_appwrite/theme/app_theme.dart';
@@ -27,7 +27,7 @@ class App extends ConsumerWidget {
 
     // The accent (seed) color is a per-user setting; watching it here
     // re-themes the whole app live when the user picks a new color.
-    final UserSettings settings = ref.watch(userSettingsControllerProvider);
+    final UserSettings settings = ref.watch(userSettingsServiceProvider);
     final Color seedColor = Color(settings.accentColorValue);
 
     return MaterialApp.router(

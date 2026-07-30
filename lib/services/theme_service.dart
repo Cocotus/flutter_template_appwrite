@@ -8,7 +8,7 @@ part 'theme_service.g.dart';
 /// Exposes the current dark-mode flag and a [toggle] action.
 ///
 /// The single source of truth is [UserSettings.isDarkMode] (held by
-/// `UserSettingsController`): before login it comes from the local cache,
+/// `UserSettingsService`): before login it comes from the local cache,
 /// after login the value loaded from Appwrite takes over. This service
 /// simply mirrors that flag reactively, so `app.dart` and the login view
 /// have one obvious place to read and switch the theme.
@@ -18,7 +18,7 @@ class ThemeService extends _$ThemeService {
   bool build() {
     // Rebuilds automatically whenever the settings change (e.g. after the
     // remote settings arrive post-login).
-    final UserSettings settings = ref.watch(userSettingsControllerProvider);
+    final UserSettings settings = ref.watch(userSettingsServiceProvider);
     return settings.isDarkMode;
   }
 
@@ -27,8 +27,8 @@ class ThemeService extends _$ThemeService {
   Future<void> toggle() async {
     final bool newIsDarkMode = !state;
 
-    final UserSettingsController settingsController =
-        ref.read(userSettingsControllerProvider.notifier);
+    final UserSettingsService settingsController =
+        ref.read(userSettingsServiceProvider.notifier);
     await settingsController.setDarkMode(newIsDarkMode);
   }
 }

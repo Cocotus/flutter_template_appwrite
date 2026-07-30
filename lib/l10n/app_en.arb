@@ -98,5 +98,35 @@
   "errorInvalidCredentials": "Invalid email or password",
   "errorGeneric": "Something went wrong. Please try again.",
   "showPassword": "Show password",
-  "hidePassword": "Hide password"
+  "hidePassword": "Hide password",
+  "settingsNeverSynced": "Not synced with the cloud yet.",
+  "settingsLastSynced": "Last synced {timestamp}",
+  "@settingsLastSynced": {
+    "placeholders": {
+      "timestamp": { "type": "String" }
+    }
+  },
+  "settingsSyncFailed": "Sync failed. Your changes are saved on this device.",
+  "settingsUserData": "My data",
+  "settingsUserDataDescription": "Everything you have created in this app is stored on this device.",
+  "settingsUserDataCount": "{count, plural, =0{No entries} =1{1 entry} other{{count} entries}}",
+  "@settingsUserDataCount": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+  "settingsExport": "Export as JSON",
+  "settingsImport": "Import from JSON",
+  "settingsExportDone": "Exported to {path}",
+  "@settingsExportDone": {
+    "placeholders": {
+      "path": { "type": "String" }
+    }
+  },
+  "settingsImportDone": "Import complete",
+  "settingsImportFailed": "That file is not a backup of this app.",
+  "settingsClearData": "Delete all my data",
+  "settingsClearDataConfirm": "Delete everything you have created in this app? This cannot be undone.",
+  "commonCancel": "Cancel",
+  "commonDelete": "Delete"
 }

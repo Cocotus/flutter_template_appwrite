@@ -5,7 +5,7 @@ import 'package:flutter_template_appwrite/config/app_config.dart';
 import 'package:flutter_template_appwrite/services/logger_service.dart';
 import 'package:flutter_template_appwrite/services/preferences_service.dart';
 
-part 'demo_mode_service.g.dart';
+part 'demo_mode.g.dart';
 
 /// Whether the demo feature may be used AT ALL in this build.
 ///
@@ -21,13 +21,13 @@ final bool demoModeIsAllowed = AppConfig.demoModeAllowed || kDebugMode;
 /// The effective demo-mode state for the whole app.
 ///
 /// When `true`, the service layer swaps in the in-memory fakes
-/// (`DemoAuthService` / `DemoDatabaseService`) instead of the Appwrite-backed
+/// (`DemoAuthService` / `DemoCloudSyncService`) instead of the Appwrite-backed
 /// implementations, so every view works without a backend or a login.
 ///
 /// The value is `persisted user choice AND [demoModeIsAllowed]`: the stored
 /// preference can never turn demo mode on in a build that does not allow it.
 ///
-/// Kept alive because [authServiceProvider] and [databaseServiceProvider]
+/// Kept alive because [authServiceProvider] and [cloudSyncServiceProvider]
 /// watch it: flipping it rebuilds those services (and, transitively,
 /// `currentUserProvider` and the router guard), so the app switches between
 /// real and demo backends without a restart.

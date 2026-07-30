@@ -517,6 +517,96 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Hide password'**
   String get hidePassword;
+
+  /// No description provided for @settingsNeverSynced.
+  ///
+  /// In en, this message translates to:
+  /// **'Not synced with the cloud yet.'**
+  String get settingsNeverSynced;
+
+  /// No description provided for @settingsLastSynced.
+  ///
+  /// In en, this message translates to:
+  /// **'Last synced {timestamp}'**
+  String settingsLastSynced(String timestamp);
+
+  /// No description provided for @settingsSyncFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Sync failed. Your changes are saved on this device.'**
+  String get settingsSyncFailed;
+
+  /// No description provided for @settingsUserData.
+  ///
+  /// In en, this message translates to:
+  /// **'My data'**
+  String get settingsUserData;
+
+  /// No description provided for @settingsUserDataDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Everything you have created in this app is stored on this device.'**
+  String get settingsUserDataDescription;
+
+  /// No description provided for @settingsUserDataCount.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =0{No entries} =1{1 entry} other{{count} entries}}'**
+  String settingsUserDataCount(int count);
+
+  /// No description provided for @settingsExport.
+  ///
+  /// In en, this message translates to:
+  /// **'Export as JSON'**
+  String get settingsExport;
+
+  /// No description provided for @settingsImport.
+  ///
+  /// In en, this message translates to:
+  /// **'Import from JSON'**
+  String get settingsImport;
+
+  /// No description provided for @settingsExportDone.
+  ///
+  /// In en, this message translates to:
+  /// **'Exported to {path}'**
+  String settingsExportDone(String path);
+
+  /// No description provided for @settingsImportDone.
+  ///
+  /// In en, this message translates to:
+  /// **'Import complete'**
+  String get settingsImportDone;
+
+  /// No description provided for @settingsImportFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'That file is not a backup of this app.'**
+  String get settingsImportFailed;
+
+  /// No description provided for @settingsClearData.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete all my data'**
+  String get settingsClearData;
+
+  /// No description provided for @settingsClearDataConfirm.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete everything you have created in this app? This cannot be undone.'**
+  String get settingsClearDataConfirm;
+
+  /// No description provided for @commonCancel.
+  ///
+  /// In en, this message translates to:
+  /// **'Cancel'**
+  String get commonCancel;
+
+  /// No description provided for @commonDelete.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete'**
+  String get commonDelete;
 }
 
 class _AppLocalizationsDelegate

@@ -10,66 +10,87 @@ part of 'user_settings_service.dart';
 // ignore_for_file: type=lint, type=warning
 /// Holds and persists the current user's [UserSettings].
 ///
-/// This lives in `services/` (not `controllers/`) because settings are
-/// shared, cross-cutting state: theme, locale and the sidebar all depend on
-/// it, not just one view.
+/// This lives in `services/` (not `controllers/`) because settings are shared,
+/// cross-cutting state: theme, locale and the sidebar all depend on it, not just
+/// one view.
 ///
-/// Settings precedence ("local first, remote wins"):
-/// 1. [build] returns sane defaults, merged with the local
-///    `shared_preferences` cache, so the UI renders instantly.
-/// 2. After login, [loadForCurrentUser] fetches the authoritative row from
-///    Appwrite and replaces the state once it arrives.
-/// 3. Every change via [save] is written to BOTH the local cache and the
-///    Appwrite row.
+/// ## Local only, on purpose
+///
+/// This controller knows nothing about Appwrite. `shared_preferences` is the
+/// live, authoritative store: [build] reads it synchronously at startup so the
+/// first frame already has the right theme and language, and [save] writes it
+/// back. That is the whole persistence story here.
+///
+/// Getting the settings into the cloud is a separate, explicit step owned by
+/// `CloudSync` — pull after login, push on Save and on logout. Keeping the two
+/// apart is what lets a build with `HAS_LOGIN=false` use this class unchanged,
+/// with no Appwrite code reachable at all.
+///
+/// Its counterpart for user-created content is `UserDataService`; see
+/// [UserData] for why the two are separate stores.
 
-@ProviderFor(UserSettingsController)
-final userSettingsControllerProvider = UserSettingsControllerProvider._();
+@ProviderFor(UserSettingsService)
+final userSettingsServiceProvider = UserSettingsServiceProvider._();
 
 /// Holds and persists the current user's [UserSettings].
 ///
-/// This lives in `services/` (not `controllers/`) because settings are
-/// shared, cross-cutting state: theme, locale and the sidebar all depend on
-/// it, not just one view.
+/// This lives in `services/` (not `controllers/`) because settings are shared,
+/// cross-cutting state: theme, locale and the sidebar all depend on it, not just
+/// one view.
 ///
-/// Settings precedence ("local first, remote wins"):
-/// 1. [build] returns sane defaults, merged with the local
-///    `shared_preferences` cache, so the UI renders instantly.
-/// 2. After login, [loadForCurrentUser] fetches the authoritative row from
-///    Appwrite and replaces the state once it arrives.
-/// 3. Every change via [save] is written to BOTH the local cache and the
-///    Appwrite row.
-final class UserSettingsControllerProvider
-    extends $NotifierProvider<UserSettingsController, UserSettings> {
+/// ## Local only, on purpose
+///
+/// This controller knows nothing about Appwrite. `shared_preferences` is the
+/// live, authoritative store: [build] reads it synchronously at startup so the
+/// first frame already has the right theme and language, and [save] writes it
+/// back. That is the whole persistence story here.
+///
+/// Getting the settings into the cloud is a separate, explicit step owned by
+/// `CloudSync` — pull after login, push on Save and on logout. Keeping the two
+/// apart is what lets a build with `HAS_LOGIN=false` use this class unchanged,
+/// with no Appwrite code reachable at all.
+///
+/// Its counterpart for user-created content is `UserDataService`; see
+/// [UserData] for why the two are separate stores.
+final class UserSettingsServiceProvider
+    extends $NotifierProvider<UserSettingsService, UserSettings> {
   /// Holds and persists the current user's [UserSettings].
   ///
-  /// This lives in `services/` (not `controllers/`) because settings are
-  /// shared, cross-cutting state: theme, locale and the sidebar all depend on
-  /// it, not just one view.
+  /// This lives in `services/` (not `controllers/`) because settings are shared,
+  /// cross-cutting state: theme, locale and the sidebar all depend on it, not just
+  /// one view.
   ///
-  /// Settings precedence ("local first, remote wins"):
-  /// 1. [build] returns sane defaults, merged with the local
-  ///    `shared_preferences` cache, so the UI renders instantly.
-  /// 2. After login, [loadForCurrentUser] fetches the authoritative row from
-  ///    Appwrite and replaces the state once it arrives.
-  /// 3. Every change via [save] is written to BOTH the local cache and the
-  ///    Appwrite row.
-  UserSettingsControllerProvider._()
+  /// ## Local only, on purpose
+  ///
+  /// This controller knows nothing about Appwrite. `shared_preferences` is the
+  /// live, authoritative store: [build] reads it synchronously at startup so the
+  /// first frame already has the right theme and language, and [save] writes it
+  /// back. That is the whole persistence story here.
+  ///
+  /// Getting the settings into the cloud is a separate, explicit step owned by
+  /// `CloudSync` — pull after login, push on Save and on logout. Keeping the two
+  /// apart is what lets a build with `HAS_LOGIN=false` use this class unchanged,
+  /// with no Appwrite code reachable at all.
+  ///
+  /// Its counterpart for user-created content is `UserDataService`; see
+  /// [UserData] for why the two are separate stores.
+  UserSettingsServiceProvider._()
     : super(
         from: null,
         argument: null,
         retry: null,
-        name: r'userSettingsControllerProvider',
+        name: r'userSettingsServiceProvider',
         isAutoDispose: false,
         dependencies: null,
         $allTransitiveDependencies: null,
       );
 
   @override
-  String debugGetCreateSourceHash() => _$userSettingsControllerHash();
+  String debugGetCreateSourceHash() => _$userSettingsServiceHash();
 
   @$internal
   @override
-  UserSettingsController create() => UserSettingsController();
+  UserSettingsService create() => UserSettingsService();
 
   /// {@macro riverpod.override_with_value}
   Override overrideWithValue(UserSettings value) {
@@ -80,24 +101,31 @@ final class UserSettingsControllerProvider
   }
 }
 
-String _$userSettingsControllerHash() =>
-    r'8effdaeb52803469227a1173e5d94febe702b927';
+String _$userSettingsServiceHash() =>
+    r'f17191e91f6d4afa1b74421171a05ff5e38897ce';
 
 /// Holds and persists the current user's [UserSettings].
 ///
-/// This lives in `services/` (not `controllers/`) because settings are
-/// shared, cross-cutting state: theme, locale and the sidebar all depend on
-/// it, not just one view.
+/// This lives in `services/` (not `controllers/`) because settings are shared,
+/// cross-cutting state: theme, locale and the sidebar all depend on it, not just
+/// one view.
 ///
-/// Settings precedence ("local first, remote wins"):
-/// 1. [build] returns sane defaults, merged with the local
-///    `shared_preferences` cache, so the UI renders instantly.
-/// 2. After login, [loadForCurrentUser] fetches the authoritative row from
-///    Appwrite and replaces the state once it arrives.
-/// 3. Every change via [save] is written to BOTH the local cache and the
-///    Appwrite row.
+/// ## Local only, on purpose
+///
+/// This controller knows nothing about Appwrite. `shared_preferences` is the
+/// live, authoritative store: [build] reads it synchronously at startup so the
+/// first frame already has the right theme and language, and [save] writes it
+/// back. That is the whole persistence story here.
+///
+/// Getting the settings into the cloud is a separate, explicit step owned by
+/// `CloudSync` — pull after login, push on Save and on logout. Keeping the two
+/// apart is what lets a build with `HAS_LOGIN=false` use this class unchanged,
+/// with no Appwrite code reachable at all.
+///
+/// Its counterpart for user-created content is `UserDataService`; see
+/// [UserData] for why the two are separate stores.
 
-abstract class _$UserSettingsController extends $Notifier<UserSettings> {
+abstract class _$UserSettingsService extends $Notifier<UserSettings> {
   UserSettings build();
   @$mustCallSuper
   @override

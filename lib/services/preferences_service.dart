@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import 'package:flutter_template_appwrite/models/user_data.dart';
 import 'package:flutter_template_appwrite/models/user_settings.dart';
 
 part 'preferences_service.g.dart';
@@ -33,11 +34,15 @@ SharedPreferences sharedPreferences(Ref ref) {
   );
 }
 
-/// Local, non-sensitive cache built on [SharedPreferences].
+/// The app's local, non-sensitive store, built on [SharedPreferences].
 ///
-/// Used for the cached [UserSettings] copy so the UI can start with the
-/// last known settings instantly, before the authoritative row is fetched
-/// from Appwrite ("local first, remote wins" — see `UserSettingsController`).
+/// **This is the authoritative store**, not a cache in front of Appwrite. Both
+/// [UserSettings] and [UserData] are read from here at startup and written back
+/// on every change, with no network involved. Appwrite is a sync layer on top,
+/// touched only on login, on an explicit Save and on logout — see `CloudSync`.
+///
+/// That ordering is what lets a build with `HAS_LOGIN=false` work unchanged:
+/// nothing about the app's own persistence depends on there being an account.
 ///
 /// Do NOT store secrets here — use `SecureStorageService` for anything
 /// sensitive.
@@ -50,9 +55,11 @@ class PreferencesService {
 
   static const String _userSettingsKey = 'cached_user_settings';
   static const String _demoModeKey = 'demo_mode_enabled';
+  static const String _userDataKey = 'user_data';
+  static const String _lastSyncedAtKey = 'cloud_last_synced_at';
 
-  /// Returns the locally cached [UserSettings], or `null` when nothing has
-  /// been cached yet (first app start) or the cache is unreadable.
+  /// Returns the stored [UserSettings], or `null` when nothing has been
+  /// stored yet (first app start) or the stored value is unreadable.
   UserSettings? readCachedUserSettings() {
     final String? jsonText = _preferences.getString(_userSettingsKey);
     if (jsonText == null) {
@@ -92,6 +99,74 @@ class PreferencesService {
   /// Persists the demo-mode [enabled] choice.
   Future<void> writeDemoMode({required bool enabled}) async {
     await _preferences.setBool(_demoModeKey, enabled);
+  }
+
+  // --- User data -------------------------------------------------------------
+
+  /// Returns the stored [UserData], or `null` when nothing is stored yet or the
+  /// stored value is unreadable.
+  ///
+  /// A corrupt document returns `null` rather than throwing, matching
+  /// [readCachedUserSettings] — the caller then starts from defaults instead of
+  /// the app failing to open.
+  UserData? readUserData() {
+    final String? jsonText = _preferences.getString(_userDataKey);
+    if (jsonText == null) {
+      return null;
+    }
+
+    try {
+      final Map<String, dynamic> jsonMap =
+          jsonDecode(jsonText) as Map<String, dynamic>;
+      return UserData.fromJson(jsonMap);
+    } catch (_) {
+      return null;
+    }
+  }
+
+  /// Stores [data] as the authoritative user-data document.
+  ///
+  /// Returns the number of characters written, so a caller that allows large
+  /// documents can warn before running into a platform limit — on web the
+  /// backing store is localStorage, roughly 5 MB per origin, with no error
+  /// raised until it is exceeded.
+  Future<int> writeUserData(UserData data) async {
+    final String jsonText = jsonEncode(data.toJson());
+    await _preferences.setString(_userDataKey, jsonText);
+    return jsonText.length;
+  }
+
+  /// Removes the stored user data (used on logout).
+  Future<void> clearUserData() async {
+    await _preferences.remove(_userDataKey);
+  }
+
+  // --- Cloud sync bookkeeping ------------------------------------------------
+
+  /// Returns when the configuration was last synced with Appwrite, or `null`
+  /// when it never has been on this device.
+  ///
+  /// Shown in the settings page so "is my data in the cloud?" has a visible
+  /// answer — the app deliberately never syncs on its own (see `CloudSync`).
+  DateTime? readLastSyncedAt() {
+    final String? stored = _preferences.getString(_lastSyncedAtKey);
+    if (stored == null) {
+      return null;
+    }
+    return DateTime.tryParse(stored);
+  }
+
+  /// Records [timestamp] as the moment of the last successful sync.
+  Future<void> writeLastSyncedAt(DateTime timestamp) async {
+    await _preferences.setString(
+      _lastSyncedAtKey,
+      timestamp.toIso8601String(),
+    );
+  }
+
+  /// Forgets the last sync time (used on logout).
+  Future<void> clearLastSyncedAt() async {
+    await _preferences.remove(_lastSyncedAtKey);
   }
 }
 

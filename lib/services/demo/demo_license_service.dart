@@ -1,6 +1,6 @@
 import 'package:flutter_template_appwrite/models/entitlement.dart';
 import 'package:flutter_template_appwrite/services/demo/demo_data.dart';
-import 'package:flutter_template_appwrite/services/license_service.dart';
+import 'package:flutter_template_appwrite/services/license/license_service.dart';
 
 /// In-memory [LicenseService] used when demo mode is active.
 ///

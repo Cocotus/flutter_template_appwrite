@@ -44,23 +44,55 @@ The app itself is an *empty but complete* shell — login/register, home, settin
 1. Create an account at [cloud.appwrite.io](https://cloud.appwrite.io) and create a **project**. Note the **Project ID** and the API **endpoint** (e.g. `https://cloud.appwrite.io/v1`).
 2. **Add a Web platform** to the project (Appwrite console → your project → *Overview* → *Add platform* → *Web*) and register the hostname you serve the app from — `localhost` for development, your production domain later.
 3. Make sure **Email/Password** authentication is enabled (*Auth* → *Settings*).
-4. Create a **Database** (default ID used by this template: `app`).
-5. Inside it, create a **table** `user_settings` (TablesDB — databases → tables → rows):
-   - Columns:
+4. **User settings: nothing to create.** Theme, language, accent, developer mode
+   and the display name live in the user's **account preferences** — a JSON
+   object Appwrite keeps on the account itself
+   (`account.getPrefs()` / `account.updatePrefs()`). No table, no columns, no
+   permissions, and adding a new setting never touches the Appwrite console.
+   The limit is **64 kB per user**. See
+   [`CloudSyncService`](lib/services/cloud_sync_service.dart).
 
-     | Column             | Type    | Required | Default |
-     |--------------------|---------|----------|---------|
-     | `isDarkMode`       | Boolean | no       | `false` |
-     | `languageCode`     | String  | no       | `en`    |
-     | `sidebarCollapsed` | Boolean | no       | `false` |
-     | `developerMode`    | Boolean | no       | `false` |
-     | `displayName`      | String  | no       | `""`    |
+   > Earlier versions of this template mapped `UserSettings` field-per-column
+   > into a `user_settings` table. That made every new setting a console change
+   > that had to land *before* the client shipped — Appwrite rejects a write
+   > containing an undeclared attribute outright (`Unknown attribute`), so a
+   > forgotten column was not a missing value but a failed save. If you are
+   > upgrading an existing app, see "Migrating from the `user_settings` table"
+   > below.
+5. **User data: create a Storage bucket** `user_data` (*Storage* → *Create
+   bucket*), for everything the user *creates* — which is unbounded and will
+   eventually outgrow 64 kB. See [`UserData`](lib/models/user_data.dart).
+   - **Permissions:** enable **file security**, and grant **Create** to role
+     **Users**. Do not grant bucket-level read/update/delete — the app sets the
+     owner on each file it creates, so a user can only reach their own.
+   - The app stores **one file per user whose file ID equals the Appwrite user
+     ID**, so reading it back is a direct fetch with no query.
+   - Allowed file extensions: add `json`, or leave the list empty to allow any.
+   - Optional but recommended: turn **compression** on (the document is JSON and
+     compresses well) and leave encryption at its default.
+6. Create a **Database** (default ID used by this template: `app`) only if you
+   want the optional features below. Settings and user data do not need one.
+7. *(Optional, for remote logging)* create a table `logs` with columns `level` (String), `message` (String), `stackTrace` (String, size ~16384), `timestamp` (String), `userId` (String), and grant **Create** to role **Users**.
+8. *(Optional, for premium licensing)* create a table `entitlements` — see section 7 "Premium licensing / monetization" below for columns, permissions and the webhook function.
+9. **Password reset (TODO for your app):** this template calls `account.createRecovery(...)` to send the reset email. The page that *completes* the reset (reads the `userId`/`secret` URL parameters and calls `account.updateRecovery(...)`) is **not implemented** in this template — you must add it. The `PASSWORD_RECOVERY_URL` in the config is a placeholder.
 
-   - **Permissions:** enable **row security**. On the table, grant **Create** to role **Users** (any logged-in user may create their own row). Do **not** grant table-level read/update/delete — those are granted at row level automatically when the user creates their row (the code sets the user as document owner).
-   - The app stores **one row per user with the row ID equal to the Appwrite user ID**, so lookups are direct and there is exactly one settings row per user.
-6. *(Optional, for remote logging)* create a table `logs` with columns `level` (String), `message` (String), `stackTrace` (String, size ~16384), `timestamp` (String), `userId` (String), and grant **Create** to role **Users**.
-7. *(Optional, for premium licensing)* create a table `entitlements` — see section 7 "Premium licensing / monetization" below for columns, permissions and the webhook function.
-8. **Password reset (TODO for your app):** this template calls `account.createRecovery(...)` to send the reset email. The page that *completes* the reset (reads the `userId`/`secret` URL parameters and calls `account.updateRecovery(...)`) is **not implemented** in this template — you must add it. The `PASSWORD_RECOVERY_URL` in the config is a placeholder.
+### Migrating from the `user_settings` table
+
+If your app was built from an older revision of this template, it has a
+`user_settings` table with one column per setting. To move to preferences +
+bucket:
+
+1. Create the `user_data` bucket (step 5 above) and swap
+   `APPWRITE_USER_SETTINGS_TABLE_ID` for `APPWRITE_USER_DATA_BUCKET_ID` in your
+   config.
+2. Ship the new build. Existing users keep their local `shared_preferences`
+   copy, so nothing visibly changes for them; their first Save writes the
+   preferences object and the bucket file.
+3. Users who sign in on a *fresh* device before ever pressing Save will get
+   defaults, because the old table is no longer read. If that matters, keep the
+   old table around and add a one-time read from it in `CloudSyncService.pull`
+   when the preferences object is empty; delete that branch a release later.
+4. Once nothing reads it, delete the `user_settings` table in the console.
 
 ## 2. Configure the project
 
@@ -75,7 +107,7 @@ cp config/app_config.example.json config/app_config.json
   "APPWRITE_ENDPOINT": "https://cloud.appwrite.io/v1",
   "APPWRITE_PROJECT_ID": "your-project-id",
   "APPWRITE_DATABASE_ID": "app",
-  "APPWRITE_USER_SETTINGS_TABLE_ID": "user_settings",
+  "APPWRITE_USER_DATA_BUCKET_ID": "user_data",
   "APPWRITE_LOGS_TABLE_ID": "logs",
   "APPWRITE_ENTITLEMENTS_TABLE_ID": "entitlements",
   "HAS_PREMIUM": true,

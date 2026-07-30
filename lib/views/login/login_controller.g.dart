@@ -51,7 +51,7 @@ final class LoginControllerProvider
   LoginController create() => LoginController();
 }
 
-String _$loginControllerHash() => r'e4d3e34f7d6318ee2f7ebe2799599a3dc79e337e';
+String _$loginControllerHash() => r'a57faa26b0b6b6f3351cd29b57e4415dbf698507';
 
 /// Controller for the login/register screen.
 ///

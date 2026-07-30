@@ -4,7 +4,7 @@ import 'package:go_router/go_router.dart';
 
 import 'package:flutter_template_appwrite/l10n/app_localizations.dart';
 import 'package:flutter_template_appwrite/router/app_router.dart';
-import 'package:flutter_template_appwrite/services/license_service.dart';
+import 'package:flutter_template_appwrite/services/license/premium_status.dart';
 import 'package:flutter_template_appwrite/widgets/buttons/app_buttons.dart';
 
 /// Shows [child] only to premium users; everyone else sees an upgrade card

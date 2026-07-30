@@ -214,4 +214,65 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get hidePassword => 'Hide password';
+
+  @override
+  String get settingsNeverSynced => 'Not synced with the cloud yet.';
+
+  @override
+  String settingsLastSynced(String timestamp) {
+    return 'Last synced $timestamp';
+  }
+
+  @override
+  String get settingsSyncFailed =>
+      'Sync failed. Your changes are saved on this device.';
+
+  @override
+  String get settingsUserData => 'My data';
+
+  @override
+  String get settingsUserDataDescription =>
+      'Everything you have created in this app is stored on this device.';
+
+  @override
+  String settingsUserDataCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count entries',
+      one: '1 entry',
+      zero: 'No entries',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get settingsExport => 'Export as JSON';
+
+  @override
+  String get settingsImport => 'Import from JSON';
+
+  @override
+  String settingsExportDone(String path) {
+    return 'Exported to $path';
+  }
+
+  @override
+  String get settingsImportDone => 'Import complete';
+
+  @override
+  String get settingsImportFailed => 'That file is not a backup of this app.';
+
+  @override
+  String get settingsClearData => 'Delete all my data';
+
+  @override
+  String get settingsClearDataConfirm =>
+      'Delete everything you have created in this app? This cannot be undone.';
+
+  @override
+  String get commonCancel => 'Cancel';
+
+  @override
+  String get commonDelete => 'Delete';
 }

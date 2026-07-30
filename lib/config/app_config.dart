@@ -49,10 +49,17 @@ class AppConfig {
     defaultValue: 'app',
   );
 
-  /// The ID of the table that stores one [UserSettings] row per user.
-  static const String userSettingsTableId = String.fromEnvironment(
-    'APPWRITE_USER_SETTINGS_TABLE_ID',
-    defaultValue: 'user_settings',
+  /// The ID of the Storage bucket that holds one user-data file per user.
+  ///
+  /// User *settings* need no bucket and no table: they live in the Appwrite
+  /// account-preferences object, which is created implicitly with the account
+  /// (see `CloudSyncService`). Only the user *data* document — whatever the app
+  /// lets the user create and would be painful to lose — is large enough to
+  /// need real storage, and it is stored as one file whose ID equals the
+  /// Appwrite user ID.
+  static const String appwriteUserDataBucketId = String.fromEnvironment(
+    'APPWRITE_USER_DATA_BUCKET_ID',
+    defaultValue: 'user_data',
   );
 
   /// The ID of the table that receives remote log entries
@@ -144,11 +151,14 @@ class AppConfig {
   /// Set to `false` for fully public tools that need no login. When `false`:
   ///   - The router skips the login page and splash auth-check entirely —
   ///     see `AppRouter`'s redirect logic.
-  ///   - Appwrite auth services are never called; `CurrentUser.build`
-  ///     returns `null` immediately, so not even a network round-trip to
-  ///     check for a session happens.
-  ///   - User settings live only in memory for the current session
-  ///     (no cloud persistence, because there is no user identity to key on).
+  ///   - Appwrite is never constructed at all: `CurrentUser.build` returns
+  ///     `null` immediately, and `appwriteServiceProvider` throws if anything
+  ///     tries to reach it anyway.
+  ///   - User settings and user data are stored locally in
+  ///     `shared_preferences` and nowhere else (there is no user identity to
+  ///     key cloud storage on). They still survive app restarts; only the
+  ///     cloud sync is absent. Transferring them between machines is the
+  ///     export/import button in the settings page.
   ///   - [demoModeAllowed] becomes moot — there is no login screen left for
   ///     its demo switch to appear on.
   ///

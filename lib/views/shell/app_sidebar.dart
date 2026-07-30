@@ -5,7 +5,7 @@ import 'package:go_router/go_router.dart';
 import 'package:flutter_template_appwrite/config/app_config.dart';
 import 'package:flutter_template_appwrite/l10n/app_localizations.dart';
 import 'package:flutter_template_appwrite/models/user_settings.dart';
-import 'package:flutter_template_appwrite/services/auth_service.dart';
+import 'package:flutter_template_appwrite/services/auth/current_user.dart';
 import 'package:flutter_template_appwrite/services/user_settings_service.dart';
 import 'package:flutter_template_appwrite/theme/app_theme.dart';
 import 'package:flutter_template_appwrite/views/profile/profile_controller.dart';
@@ -79,7 +79,7 @@ class AppSidebar extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final AppLocalizations localizations = AppLocalizations.of(context)!;
-    final UserSettings settings = ref.watch(userSettingsControllerProvider);
+    final UserSettings settings = ref.watch(userSettingsServiceProvider);
     final Color background =
         AppTheme.brandSurface(Color(settings.accentColorValue));
 
@@ -190,7 +190,7 @@ class AppSidebar extends ConsumerWidget {
       onPressed: isToggleEnabled
           ? () {
               ref
-                  .read(userSettingsControllerProvider.notifier)
+                  .read(userSettingsServiceProvider.notifier)
                   .setSidebarCollapsed(!settings.sidebarCollapsed);
             }
           : null,

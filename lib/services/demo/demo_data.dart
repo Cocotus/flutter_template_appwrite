@@ -2,7 +2,7 @@
 ///
 /// Demo mode replaces the Appwrite-backed services with in-memory fakes so
 /// the whole app can be explored without any backend (see
-/// `DemoAuthService`, `DemoDatabaseService` and the `DemoMode` provider).
+/// `DemoAuthService`, `DemoCloudSyncService` and the `DemoMode` provider).
 /// Everything a demo run displays originates here — change these values to
 /// tailor the showcase.
 library;

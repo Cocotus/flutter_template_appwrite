@@ -6,7 +6,7 @@ import 'package:url_launcher/url_launcher.dart';
 
 import 'package:flutter_template_appwrite/l10n/app_localizations.dart';
 import 'package:flutter_template_appwrite/models/user_settings.dart';
-import 'package:flutter_template_appwrite/services/demo_mode_service.dart';
+import 'package:flutter_template_appwrite/services/demo_mode.dart';
 import 'package:flutter_template_appwrite/services/user_settings_service.dart';
 import 'package:flutter_template_appwrite/views/shell/app_sidebar.dart';
 
@@ -34,7 +34,7 @@ class AppShell extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final AppLocalizations localizations = AppLocalizations.of(context)!;
-    final UserSettings settings = ref.watch(userSettingsControllerProvider);
+    final UserSettings settings = ref.watch(userSettingsServiceProvider);
     final bool isDemoMode = ref.watch(demoModeProvider);
 
     // The Logs entry is an opt-in developer feature; in debug builds it is

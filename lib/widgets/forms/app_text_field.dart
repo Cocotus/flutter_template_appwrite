@@ -16,10 +16,12 @@ class AppTextField extends StatelessWidget {
     this.keyboardType,
     this.textInputAction,
     this.autofocus = false,
+    this.enabled = true,
     this.maxLines = 1,
     this.minLines,
     this.expands = false,
     this.scrollController,
+    this.onChanged,
   });
 
   /// Holds and exposes the field's text.
@@ -39,6 +41,10 @@ class AppTextField extends StatelessWidget {
 
   /// Whether this field grabs focus when the form first appears.
   final bool autofocus;
+
+  /// Whether the field accepts input. Set to false while a form is saving, so
+  /// the value cannot change under an in-flight write.
+  final bool enabled;
 
   /// Number of lines the field grows to; `null` grows without limit.
   /// Defaults to `1` (single-line), matching every pre-existing call site.
@@ -62,6 +68,13 @@ class AppTextField extends StatelessWidget {
   /// [expands] is true.
   final ScrollController? scrollController;
 
+  /// Called on every keystroke with the field's new text.
+  ///
+  /// Prefer this over attaching a listener to [controller] in the view: a form
+  /// field that feeds a draft should not need a `useEffect` plus
+  /// add/removeListener plumbing at the call site just to observe typing.
+  final ValueChanged<String>? onChanged;
+
   @override
   Widget build(BuildContext context) {
     final bool isMultiline = expands || maxLines == null || maxLines! > 1;
@@ -69,6 +82,8 @@ class AppTextField extends StatelessWidget {
     final Widget field = TextField(
       controller: controller,
       autofocus: autofocus,
+      enabled: enabled,
+      onChanged: onChanged,
       keyboardType: keyboardType,
       textInputAction: textInputAction,
       maxLines: expands ? null : maxLines,

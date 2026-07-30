@@ -64,6 +64,11 @@ dependencies:
   # in the sidebar donate button, instead of recreating the logo by hand.
   flutter_svg: ^2.2.1
 
+  # Native open/save dialogs for the JSON user-data import/export in the
+  # settings. Chosen over file_picker/share_plus because those pull win32 v6,
+  # which conflicts with the pinned package_info_plus 9.x (see above).
+  file_selector: ^1.0.3
+
 dev_dependencies:
   # No flutter_test: this template ships no test/ directory by design
   # (see AGENTS.md) and nothing imports it. It stays in pubspec.lock as a

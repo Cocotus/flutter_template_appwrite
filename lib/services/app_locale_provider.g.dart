@@ -1,6 +1,6 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 
-part of 'locale_service.dart';
+part of 'app_locale_provider.dart';
 
 // **************************************************************************
 // RiverpodGenerator
@@ -61,4 +61,4 @@ final class AppLocaleProvider
   }
 }
 
-String _$appLocaleHash() => r'a8179a2c095c805fbad7d2250137f44e4a50352a';
+String _$appLocaleHash() => r'280224ba680aa100f7c14ec70ebd763c44599715';

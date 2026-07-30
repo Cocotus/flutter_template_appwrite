@@ -1,12 +1,3 @@
-import 'dart:ui';
-
-import 'package:riverpod_annotation/riverpod_annotation.dart';
-
-import 'package:flutter_template_appwrite/models/user_settings.dart';
-import 'package:flutter_template_appwrite/services/user_settings_service.dart';
-
-part 'locale_service.g.dart';
-
 /// One selectable entry in the settings language dropdown.
 ///
 /// [englishName] is always the English name of the language — never its
@@ -69,21 +60,3 @@ const List<LanguageOption> languageOptions = <LanguageOption>[
 final List<String> supportedLanguageCodes = <String>[
   for (final LanguageOption option in languageOptions) option.code,
 ];
-
-/// Provides the active app [Locale], backed by [UserSettings.languageCode].
-///
-/// `app.dart` passes this to `MaterialApp.router(locale: ...)`, so changing
-/// the language in the settings view re-renders the whole app immediately.
-@Riverpod(keepAlive: true)
-Locale appLocale(Ref ref) {
-  final UserSettings settings = ref.watch(userSettingsControllerProvider);
-
-  final String languageCode = settings.languageCode;
-  if (supportedLanguageCodes.contains(languageCode)) {
-    return Locale(languageCode);
-  }
-
-  // Unknown code in the settings row (e.g. hand-edited): fall back to
-  // English instead of crashing the localization lookup.
-  return const Locale('en');
-}

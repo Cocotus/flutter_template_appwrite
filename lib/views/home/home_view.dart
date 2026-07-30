@@ -29,7 +29,7 @@ class HomeView extends HookConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final AppLocalizations localizations = AppLocalizations.of(context)!;
-    final UserSettings settings = ref.watch(userSettingsControllerProvider);
+    final UserSettings settings = ref.watch(userSettingsServiceProvider);
 
     final AsyncValue<HomeDemoState> demoState =
         ref.watch(homeControllerProvider);
