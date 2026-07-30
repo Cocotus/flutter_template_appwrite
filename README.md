@@ -102,32 +102,74 @@ Copy the example config and fill in your values:
 cp config/app_config.example.json config/app_config.json
 ```
 
+> **Important:** the app only ever reads `config/app_config.json` — via
+> `--dart-define-from-file=config/app_config.json` (see the launch configs in
+> `.vscode/launch.json` and `lib/config/app_config.dart`). Editing
+> `app_config.example.json` itself has no effect on a running app; always
+> make your changes in the copy **without** `.example` in the name.
+> `config/app_config.json` is **gitignored** — no secrets are ever committed.
+
 ```json
 {
+  "HAS_LOGIN": true,
+  "HAS_PREMIUM": true,
+  "DEMO_MODE_ALLOWED": false,
+
   "APPWRITE_ENDPOINT": "https://cloud.appwrite.io/v1",
   "APPWRITE_PROJECT_ID": "your-project-id",
   "APPWRITE_DATABASE_ID": "app",
   "APPWRITE_USER_DATA_BUCKET_ID": "user_data",
-  "APPWRITE_LOGS_TABLE_ID": "logs",
-  "APPWRITE_ENTITLEMENTS_TABLE_ID": "entitlements",
-  "HAS_PREMIUM": true,
-  "HAS_LOGIN": true,
-  "BUY_ME_COFFEE_USERNAME": "",
-  "PREMIUM_CHECKOUT_URL": "",
   "PASSWORD_RECOVERY_URL": "http://localhost:8080/reset-password",
+
+  "APPWRITE_ENTITLEMENTS_TABLE_ID": "entitlements",
+  "PREMIUM_CHECKOUT_URL": "",
+  "BUY_ME_COFFEE_USERNAME": "",
+
   "REMOTE_LOGGING_ENABLED": false,
-  "DEMO_MODE_ALLOWED": false
+  "APPWRITE_LOGS_TABLE_ID": "logs"
 }
 ```
 
-`APPWRITE_ENTITLEMENTS_TABLE_ID` and `PREMIUM_CHECKOUT_URL` are only needed if you use the premium licensing feature (section 7); leave `PREMIUM_CHECKOUT_URL` empty to keep the buy button disabled.
+The fields are grouped by which switch they depend on, not alphabetically — read a group's switch first; it tells you whether the rest of that group matters at all.
 
-For freeware/public variants, set `HAS_PREMIUM` to `false` to hide premium
-checkout UI and optionally show the sidebar donate button by setting a
-non-empty `BUY_ME_COFFEE_USERNAME`. Set `HAS_LOGIN` to `false` to bypass
-Appwrite auth and start directly in the shell.
+### Master switches
 
-`config/app_config.json` is **gitignored** — no secrets are ever committed. The values are injected at build time via `--dart-define-from-file` (see `lib/config/app_config.dart`).
+| Key | Default | Effect |
+|---|---|---|
+| `HAS_LOGIN` | `true` | `false` makes the entire *Appwrite connection* group below irrelevant: no Appwrite call is ever made, there is no login screen, and user settings/data live only in `shared_preferences` on the device. |
+| `HAS_PREMIUM` | `true` | Picks one half of the *Premium / donate* group: `true` → the checkout fields apply; `false` → only `BUY_ME_COFFEE_USERNAME` applies. Mutually exclusive on purpose — a shipped app either sells something or asks for tips, never both. |
+| `DEMO_MODE_ALLOWED` | `false` | Compile-time kill switch for demo mode (fake auth + in-memory data, no backend required). Only meaningful when `HAS_LOGIN` is `true`. Debug builds allow it regardless of this value. |
+
+### Appwrite connection
+
+Ignored entirely when `HAS_LOGIN` is `false` — leave these at their defaults in that case.
+
+| Key | Default | Purpose |
+|---|---|---|
+| `APPWRITE_ENDPOINT` | Appwrite Cloud | Your Appwrite API endpoint (Cloud or self-hosted). |
+| `APPWRITE_PROJECT_ID` | — | Your project ID from the Appwrite console. Required whenever `HAS_LOGIN` is `true` — the app shows a clear runtime error if left empty in that case. |
+| `APPWRITE_DATABASE_ID` | `app` | The database holding this app's tables (logs, entitlements below). |
+| `APPWRITE_USER_DATA_BUCKET_ID` | `user_data` | Storage bucket holding one user-data file per signed-in user. User *settings* need no bucket — they live in the Appwrite account-preferences object instead. |
+| `PASSWORD_RECOVERY_URL` | `http://localhost:8080/reset-password` | URL Appwrite embeds in password-recovery e-mails. Its origin must be registered as a Web platform in the Appwrite console, otherwise recovery fails with a 400 error. |
+
+### Premium / donate
+
+Which half applies depends on `HAS_PREMIUM` above (section 7 covers the premium feature in full).
+
+| Key | Default | Purpose |
+|---|---|---|
+| `APPWRITE_ENTITLEMENTS_TABLE_ID` | `entitlements` | Table holding one premium-entitlement row per paying user, written by your payment webhook function. Used only when `HAS_PREMIUM` is `true`. |
+| `PREMIUM_CHECKOUT_URL` | *(empty)* | Hosted checkout URL for your premium product (e.g. a Lemon Squeezy "buy" link). Not a secret — only the account e-mail and user ID are appended as query parameters. Empty disables the buy button and shows a configuration hint instead. |
+| `BUY_ME_COFFEE_USERNAME` | *(empty)* | Your Buy Me a Coffee account slug (the part after `buymeacoffee.com/`). Used only when `HAS_PREMIUM` is `false`; empty hides the donate button entirely. |
+
+### Remote logging
+
+Independent of the switches above, but the table it writes to still lives in Appwrite, so it also needs `HAS_LOGIN: true` to actually reach anything.
+
+| Key | Default | Purpose |
+|---|---|---|
+| `REMOTE_LOGGING_ENABLED` | `false` | Forwards error/fatal logs to `APPWRITE_LOGS_TABLE_ID` in addition to local logging, which always happens regardless of this flag. |
+| `APPWRITE_LOGS_TABLE_ID` | `logs` | Table that receives remote log entries. Used only when `REMOTE_LOGGING_ENABLED` is `true`. |
 
 ## 3. Code generation & first run
 
