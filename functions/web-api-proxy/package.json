@@ -1,0 +1,8 @@
+{
+  "name": "web-api-proxy",
+  "version": "1.0.0",
+  "description": "Appwrite Function: generic server-side proxy so Flutter Web can call a REST API (or fetch a page) that sends no CORS headers, without the browser blocking the response",
+  "type": "module",
+  "main": "src/main.js",
+  "dependencies": {}
+}

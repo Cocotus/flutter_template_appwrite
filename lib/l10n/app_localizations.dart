@@ -224,6 +224,30 @@ abstract class AppLocalizations {
   /// **'Reset'**
   String get homeDemoReset;
 
+  /// No description provided for @homeApiDemoTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'External REST API'**
+  String get homeApiDemoTitle;
+
+  /// No description provided for @homeApiDemoIntro.
+  ///
+  /// In en, this message translates to:
+  /// **'Fetches example.com and shows the page title it finds — a small demo of calling an external REST API/web page, and of the CORS wall Flutter Web specifically hits doing so. See functions/web-api-proxy and README §12.'**
+  String get homeApiDemoIntro;
+
+  /// No description provided for @homeApiDemoResultLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Page title:'**
+  String get homeApiDemoResultLabel;
+
+  /// No description provided for @homeApiDemoWebSetupNeeded.
+  ///
+  /// In en, this message translates to:
+  /// **'This demo needs a small server-side proxy to run on Flutter Web, because browsers block direct calls to sites with no CORS support of their own. See README §12 for the five-minute setup — desktop and mobile builds already work here with no setup at all.'**
+  String get homeApiDemoWebSetupNeeded;
+
   /// No description provided for @homeMoreInfo.
   ///
   /// In en, this message translates to:

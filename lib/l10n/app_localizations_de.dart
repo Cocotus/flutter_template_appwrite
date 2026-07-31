@@ -61,6 +61,20 @@ class AppLocalizationsDe extends AppLocalizations {
   String get homeDemoReset => 'Zurücksetzen';
 
   @override
+  String get homeApiDemoTitle => 'Externe REST-API';
+
+  @override
+  String get homeApiDemoIntro =>
+      'Ruft example.com auf und zeigt den gefundenen Seitentitel — eine kleine Demo für den Aufruf einer externen REST-API/Webseite und für die CORS-Sperre, auf die Flutter Web dabei speziell trifft. Siehe functions/web-api-proxy und README §12.';
+
+  @override
+  String get homeApiDemoResultLabel => 'Seitentitel:';
+
+  @override
+  String get homeApiDemoWebSetupNeeded =>
+      'Diese Demo benötigt einen kleinen serverseitigen Proxy, um unter Flutter Web zu funktionieren, da Browser direkte Aufrufe an Seiten ohne eigene CORS-Unterstützung blockieren. Die fünfminütige Einrichtung steht in README §12 — Desktop- und Mobile-Builds funktionieren hier bereits ohne jede Einrichtung.';
+
+  @override
   String get homeMoreInfo =>
       'Das vollständige Tutorial steht im README. Die Hilfe-Seite in der Sidebar zeigt, wie ein Markdown-Handbuch mit der App ausgeliefert wird.';
 

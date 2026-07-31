@@ -123,9 +123,7 @@ class AppConfig {
   /// Only meaningful when [hasLogin] is `true`: with `hasLogin: false`
   /// there is no login page at all, so there is no demo switch to gate —
   /// see the "Freeware / public tool" profile in the class doc above.
-  static const bool demoModeAllowed = bool.fromEnvironment(
-    'DEMO_MODE_ALLOWED',
-  );
+  static const bool demoModeAllowed = bool.fromEnvironment('DEMO_MODE_ALLOWED');
 
   /// Whether the app ships with a premium/subscription offering.
   ///
@@ -187,5 +185,29 @@ class AppConfig {
   /// which does exactly this.
   static const String buyMeCoffeeUsername = String.fromEnvironment(
     'BUY_ME_COFFEE_USERNAME',
+  );
+
+  // --- Web CORS proxy demo ----------------------------------------------------
+  //
+  // A browser refuses to read a cross-origin response unless the SERVER sends
+  // permission headers back (CORS). Most REST APIs and plain web pages you
+  // might want to call from this app do not send those headers, so on Flutter
+  // Web every direct request to them is blocked before this app ever sees a
+  // reply -- this is not something the app can configure around, only route
+  // around. See `WebApiProxyService`, the "External REST API" card on the
+  // Home page, and README §12 for the full explanation and setup steps.
+
+  /// The ID of the deployed `functions/web-api-proxy` Appwrite Function, or
+  /// empty if it has not been deployed yet.
+  ///
+  /// When this is set, [WebApiProxyService] routes its demo request through
+  /// that function on web builds instead of calling the target directly: the
+  /// function runs server-side (no browser, no CORS check) and simply
+  /// forwards the response back. When this is empty (the default), the Home
+  /// page's demo card explains that web needs this function deployed first,
+  /// while desktop/mobile builds keep working with no setup at all -- they
+  /// were never subject to CORS in the first place.
+  static const String webApiProxyFunctionId = String.fromEnvironment(
+    'WEB_API_PROXY_FUNCTION_ID',
   );
 }

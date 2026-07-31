@@ -377,7 +377,8 @@ flutter_template_appwrite/
 │   └── l10n/                 # app_en.arb, app_de.arb (+ generated localizations)
 ├── docs/                    # Markdown shown in-app by the Help page (docs/help_<locale>.md)
 ├── functions/               # Appwrite Functions deployed separately from the Flutter app
-│   └── lemonsqueezy-webhook/  # turns LS `order_created` webhooks into entitlement rows
+│   ├── lemonsqueezy-webhook/  # turns LS `order_created` webhooks into entitlement rows
+│   └── web-api-proxy/        # server-side fetch so web can call external REST APIs (§12)
 └── config/                  # app_config.example.json (template) + your gitignored app_config.json
 ```
 
@@ -869,6 +870,118 @@ from §2 sourced from repository secrets/variables instead of
 it exposes your Appwrite project ID and requires registering the Pages
 origin as a Web platform in Appwrite — but it's the same mechanism either
 way.
+
+---
+
+## 12. Calling external REST APIs from Flutter Web (CORS proxy demo)
+
+The Home page ships with a third demo card, **"External REST API"**, right
+next to the getting-started steps and the base-widgets demo. It fetches
+`example.com` and shows the page title it finds. This section explains why
+it exists, what it's teaching, and how to point the same pattern at your own
+API — written for a developer who has never hit this problem before.
+
+### The problem this demo exists to show you
+
+Run the app on desktop or mobile (`flutter run -d windows`, `-d linux`,
+`-d chrome` isn't one of these — see below) and the card just works,
+immediately, no setup. Build for the web instead and it shows a "this needs
+a small setup step" message. That's not a bug in this template — it's a
+browser security rule called **CORS** (Cross-Origin Resource Sharing), and
+almost every Flutter Web app that talks to a third-party REST API or scrapes
+a plain web page runs into it sooner or later.
+
+A browser refuses to hand a web page the response of a cross-origin request
+unless the **server being called** sends back permission headers saying
+"yes, this origin may read my response." Most REST APIs (and virtually all
+plain web pages, including `example.com`) send no such headers. Nothing
+about *this app's* code can change that — CORS is enforced by the browser
+itself, identically no matter which host serves the built web app. Desktop
+and mobile builds never hit this at all: there is no browser sandbox
+involved, so they can call `example.com` directly, exactly like `curl`
+would — which is exactly what `WebApiProxyService` does on those platforms.
+
+### The fix: a tiny server you control in the middle
+
+```
+Flutter Web ──(blocked by CORS)──✗──▶ example.com / your-api.com / ...
+Flutter Web ──createExecution()───▶ Appwrite Function "web-api-proxy" ──▶ example.com / ...
+                                       (runs server-side; not a browser;
+                                        CORS does not apply to it at all)
+```
+
+`functions/web-api-proxy/` is an Appwrite Function — a small piece of
+server-side code, deployed separately from the Flutter app, that fetches a
+URL on the app's behalf and hands the response straight back. Because it
+runs on Appwrite's servers and not inside a browser, it can call anything
+exactly like `curl` or the desktop build already can.
+
+The Flutter app calls this function using the Appwrite SDK's
+`Functions.createExecution(...)` (see `WebApiProxyService`) — a normal
+request to Appwrite's own REST API, the same one your login already uses.
+That's why the function itself needs **no CORS configuration of any kind**:
+the browser's permission check happens against Appwrite's API, and that's
+already allowed for your app's origin the moment you register it as a "Web"
+platform in the Appwrite console — the same step your login flow already
+requires, if this build has login enabled.
+
+### Setup (~5 minutes)
+
+1. **Appwrite Console → Functions → Create function.**
+   - Runtime: **Node.js 18+** (the function uses the built-in `fetch`, no
+     dependencies needed).
+   - Entrypoint: `src/main.js`.
+   - Deploy the `functions/web-api-proxy/` folder from this repo
+     (drag-and-drop upload, connect a Git repo, or the Appwrite CLI —
+     whichever the console offers you).
+2. **Permissions:** set "Execute Access" to **Any** (public/unauthenticated).
+3. **Copy the function's ID** (shown in the console, right under its name)
+   into `WEB_API_PROXY_FUNCTION_ID` in `config/app_config.json`:
+   ```json
+   "WEB_API_PROXY_FUNCTION_ID": "68f0a1b2c3d4e5f6a7b8"
+   ```
+4. Rebuild for web (`flutter build web --release`, or `flutter run -d
+   chrome` during development). The demo card now fetches through the
+   function instead of showing the setup hint.
+
+### Test it without the Flutter app
+
+```sh
+curl -X POST "https://cloud.appwrite.io/v1/functions/<FUNCTION_ID>/executions" \
+  -H "X-Appwrite-Project: <YOUR_PROJECT_ID>" \
+  -H "Content-Type: application/json" \
+  -d '{"path": "/?url=https%3A%2F%2Fexample.com", "method": "GET"}'
+```
+
+A response body containing `example.com`'s HTML (rather than an Appwrite
+error) means the function is deployed, reachable, and correctly allowlisting
+the host you asked it to fetch.
+
+### Adapting this to your own API
+
+This demo is deliberately built as a *pattern*, not a one-off — swap it for
+your real API in three small steps:
+
+1. **`lib/services/web_api_proxy_service.dart`:** change `demoTarget` to
+   your API's URL, and change how `fetchDemoPageTitle` parses the response
+   (e.g. `jsonDecode` for a JSON API, instead of the `<title>` regex used
+   for scraping a plain HTML page).
+2. **`functions/web-api-proxy/src/main.js`:** add your API's hostname to the
+   `ALLOWED_HOSTS` environment variable (Appwrite console → this function →
+   Settings → Environment variables) — the function itself never needs
+   further changes, since it only forwards the response, never interprets
+   it.
+3. Rename the card/service/controller to match your feature if you're
+   keeping it around long-term (`homeApiDemo*` ARB keys, `WebApiProxyService`,
+   `WebApiDemoController`) — or delete all three (the function, the
+   service+controller, and the Home page card) if you only needed this to
+   learn the pattern.
+
+**Security note:** never remove the `ALLOWED_HOSTS` allowlist check in the
+function, and never widen it to "allow everything." Without it, the
+function would fetch *any* URL a caller passed it — an open proxy anyone on
+the internet could use to make requests appear to come from your Appwrite
+project (this class of bug is called SSRF: Server-Side Request Forgery).
 
 ---
 

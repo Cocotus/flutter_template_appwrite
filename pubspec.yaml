@@ -69,6 +69,11 @@ dependencies:
   # which conflicts with the pinned package_info_plus 9.x (see above).
   file_selector: ^1.0.3
 
+  # HTTP client for the "calling an external REST API" demo on the Home page
+  # (see WebApiProxyService and README §12). `appwrite` already depends on
+  # this package transitively, so it adds no new transitive dependencies.
+  http: ^1.5.0
+
 dev_dependencies:
   # No flutter_test: this template ships no test/ directory by design
   # (see AGENTS.md) and nothing imports it. It stays in pubspec.lock as a

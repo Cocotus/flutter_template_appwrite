@@ -5,14 +5,18 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:flutter_template_appwrite/l10n/app_localizations.dart';
 import 'package:flutter_template_appwrite/models/user_settings.dart';
 import 'package:flutter_template_appwrite/services/user_settings_service.dart';
+import 'package:flutter_template_appwrite/services/web_api_proxy_service.dart';
 import 'package:flutter_template_appwrite/views/home/home_controller.dart';
 import 'package:flutter_template_appwrite/views/home/home_state.dart';
+import 'package:flutter_template_appwrite/views/home/web_api_demo_controller.dart';
 import 'package:flutter_template_appwrite/widgets/app_snackbar.dart';
 import 'package:flutter_template_appwrite/widgets/buttons/app_primary_button.dart';
 import 'package:flutter_template_appwrite/widgets/buttons/app_secondary_button.dart';
+import 'package:flutter_template_appwrite/widgets/error_display.dart';
 import 'package:flutter_template_appwrite/widgets/forms/app_dropdown_field.dart';
 import 'package:flutter_template_appwrite/widgets/forms/app_switch_tile.dart';
 import 'package:flutter_template_appwrite/widgets/forms/app_text_field.dart';
+import 'package:flutter_template_appwrite/widgets/loading_indicator.dart';
 import 'package:flutter_template_appwrite/widgets/section_header.dart';
 
 /// The home page of the starter template: getting-started steps plus a
@@ -32,15 +36,17 @@ class HomeView extends HookConsumerWidget {
     final AppLocalizations localizations = AppLocalizations.of(context)!;
     final UserSettings settings = ref.watch(userSettingsServiceProvider);
 
-    final AsyncValue<HomeDemoState> demoState =
-        ref.watch(homeControllerProvider);
+    final AsyncValue<HomeDemoState> demoState = ref.watch(
+      homeControllerProvider,
+    );
     final HomeDemoState demo = demoState.value ?? const HomeDemoState();
     final bool isSaving = demoState.isLoading;
     final HomeController controller = ref.read(homeControllerProvider.notifier);
 
     // Widget-scoped controller for the demo text field (hook-managed).
-    final TextEditingController nameController =
-        useTextEditingController(text: demo.displayName);
+    final TextEditingController nameController = useTextEditingController(
+      text: demo.displayName,
+    );
 
     final String greeting;
     if (settings.displayName.isEmpty) {
@@ -73,11 +79,17 @@ class HomeView extends HookConsumerWidget {
                 nameController: nameController,
               ),
               const SizedBox(height: 16),
+              _buildWebApiDemoCard(
+                context: context,
+                ref: ref,
+                localizations: localizations,
+              ),
+              const SizedBox(height: 16),
               Text(
                 localizations.homeMoreInfo,
                 style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                      color: Theme.of(context).colorScheme.onSurfaceVariant,
-                    ),
+                  color: Theme.of(context).colorScheme.onSurfaceVariant,
+                ),
               ),
             ],
           ),
@@ -206,6 +218,78 @@ class HomeView extends HookConsumerWidget {
                 ),
               ],
             ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  // Demonstrates calling an external REST API / web page from this app, and
+  // the CORS wall Flutter Web specifically hits when doing so. See
+  // `WebApiProxyService`'s doc comment and README §12 for the full story.
+  Widget _buildWebApiDemoCard({
+    required BuildContext context,
+    required WidgetRef ref,
+    required AppLocalizations localizations,
+  }) {
+    final WebApiProxyService webApiProxyService = ref.watch(
+      webApiProxyServiceProvider,
+    );
+
+    final Widget body;
+    if (webApiProxyService.isAvailable == false) {
+      // Web, and no proxy function configured yet: explain the CORS wall
+      // instead of attempting (and failing) a request. Desktop/mobile never
+      // reach this branch — they have no such restriction.
+      body = Text(
+        localizations.homeApiDemoWebSetupNeeded,
+        style: Theme.of(context).textTheme.bodyMedium,
+      );
+    } else {
+      final AsyncValue<String> pageTitle = ref.watch(
+        webApiDemoControllerProvider,
+      );
+      body = pageTitle.when(
+        loading: () => const LoadingIndicator(),
+        error: (Object error, StackTrace stackTrace) => ErrorDisplay(
+          message: error.toString(),
+          onRetry: () {
+            ref.read(webApiDemoControllerProvider.notifier).refresh();
+          },
+        ),
+        data: (String title) => Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: <Widget>[
+            Expanded(
+              child: Text(
+                '${localizations.homeApiDemoResultLabel} $title',
+                style: Theme.of(context).textTheme.bodyMedium,
+              ),
+            ),
+            IconButton(
+              tooltip: localizations.retry,
+              icon: const Icon(Icons.refresh),
+              onPressed: () {
+                ref.read(webApiDemoControllerProvider.notifier).refresh();
+              },
+            ),
+          ],
+        ),
+      );
+    }
+
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: <Widget>[
+            SectionHeader(
+              title: localizations.homeApiDemoTitle,
+              subtitle: localizations.homeApiDemoIntro,
+            ),
+            const SizedBox(height: 8),
+            body,
           ],
         ),
       ),

@@ -37,6 +37,7 @@ during a session. See §1 and §11 for specifics.
 - [12. Hooks & reactive pitfalls](#12-hooks--reactive-pitfalls)
 - [13. Workflow expectations for the assistant](#13-workflow-expectations-for-the-assistant)
 - [14. Persistence — user settings vs. user data](#14-persistence--user-settings-vs-user-data)
+- [15. Web CORS proxy demo (external REST APIs)](#15-web-cors-proxy-demo-external-rest-apis)
 - [Short DON'T list](#short-dont-list)
 
 ---
@@ -641,6 +642,41 @@ serialization path.
   direct fetch and never a query.
 - A 404 on either store means "nothing synced yet" — a normal state for a new
   account, not an error.
+
+## 15. Web CORS proxy demo (external REST APIs)
+
+The Home page's third card ("External REST API", `WebApiProxyService`,
+`WebApiDemoController`, `functions/web-api-proxy/`) is a worked example of a
+problem every non-trivial Flutter Web app eventually hits: **a browser
+refuses to hand a page the response of a cross-origin request unless the
+server being called sends back permission headers (CORS).** Most REST APIs
+and virtually all plain web pages send none, so a direct call from the web
+build is blocked before this app ever sees a reply — desktop/mobile builds
+never hit this at all, since there is no browser sandbox involved there.
+
+**Do not "fix" this by trying to disable or work around CORS from the
+client.** There is no client-side workaround — it is enforced by the
+browser itself. The only fix is a server you control in the middle: this
+template ships one as `functions/web-api-proxy/`, an Appwrite Function that
+fetches the target server-side (not subject to CORS) and hands the response
+back. The Flutter app calls it via `Functions.createExecution(...)` — a
+normal request to Appwrite's own REST API, the same one login already uses
+— so the function needs **no CORS headers of its own**; the browser's
+permission check happens against Appwrite's API, already allowed for the
+app's origin by the same "Web" platform registration login requires.
+
+**This demo is a teaching example, not a required feature.** If a fork does
+not need to call an external API, delete all three pieces together: the
+function folder, `web_api_proxy_service.dart` + `web_api_demo_controller.dart`,
+and the card in `home_view.dart` (plus the `homeApiDemo*` ARB keys and
+`AppConfig.webApiProxyFunctionId`). If a fork *does* need this, adapt it in
+place — see README §12's three-step "Adapting this to your own API".
+
+**Security — the function's allowlist is not optional.** `ALLOWED_HOSTS` in
+`functions/web-api-proxy/src/main.js` exists to stop the function from
+becoming an open proxy (SSRF risk) that fetches whatever URL any caller
+supplies. Never remove it or widen it to "allow everything," even
+temporarily to debug something.
 
 ## Short DON'T list
 

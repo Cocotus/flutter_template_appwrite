@@ -2,17 +2,16 @@
   "HAS_LOGIN": true,
   "HAS_PREMIUM": true,
   "DEMO_MODE_ALLOWED": false,
-
   "APPWRITE_ENDPOINT": "https://cloud.appwrite.io/v1",
   "APPWRITE_PROJECT_ID": "your-project-id",
   "APPWRITE_DATABASE_ID": "app",
   "APPWRITE_USER_DATA_BUCKET_ID": "user_data",
   "PASSWORD_RECOVERY_URL": "http://localhost:8080/reset-password",
-
   "APPWRITE_ENTITLEMENTS_TABLE_ID": "entitlements",
   "PREMIUM_CHECKOUT_URL": "",
-  "BUY_ME_COFFEE_USERNAME": "",
-
+  "BUY_ME_COFFEE_USERNAME": "demo",
   "REMOTE_LOGGING_ENABLED": false,
-  "APPWRITE_LOGS_TABLE_ID": "logs"
+  "APPWRITE_LOGS_TABLE_ID": "logs",
+
+  "WEB_API_PROXY_FUNCTION_ID": ""
 }
