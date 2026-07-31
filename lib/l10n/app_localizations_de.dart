@@ -41,6 +41,10 @@ class AppLocalizationsDe extends AppLocalizations {
       'Appwrite über config/app_config.json anbinden — oder ohne Backend im Demomodus weiter erkunden.';
 
   @override
+  String get homeStepHelp =>
+      'Die vollständige Einrichtungs-Checkliste (Appwrite, GitHub-Actions-Secrets, GitHub-Pages-Hosting) steht auf der Hilfe-Seite in der Seitenleiste.';
+
+  @override
   String get homeDemoTitle => 'Basis-Widgets';
 
   @override

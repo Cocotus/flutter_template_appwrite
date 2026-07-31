@@ -41,6 +41,10 @@ class AppLocalizationsEn extends AppLocalizations {
       'Connect Appwrite via config/app_config.json — or keep exploring in demo mode without a backend.';
 
   @override
+  String get homeStepHelp =>
+      'See the Help page in the sidebar for the full post-clone setup checklist (Appwrite, GitHub Actions secrets, GitHub Pages hosting).';
+
+  @override
   String get homeDemoTitle => 'Base widgets';
 
   @override

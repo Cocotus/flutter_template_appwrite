@@ -188,6 +188,12 @@ abstract class AppLocalizations {
   /// **'Connect Appwrite via config/app_config.json — or keep exploring in demo mode without a backend.'**
   String get homeStepBackend;
 
+  /// No description provided for @homeStepHelp.
+  ///
+  /// In en, this message translates to:
+  /// **'See the Help page in the sidebar for the full post-clone setup checklist (Appwrite, GitHub Actions secrets, GitHub Pages hosting).'**
+  String get homeStepHelp;
+
   /// No description provided for @homeDemoTitle.
   ///
   /// In en, this message translates to:

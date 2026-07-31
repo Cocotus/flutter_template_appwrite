@@ -98,7 +98,8 @@ class HomeView extends HookConsumerWidget {
     );
   }
 
-  // The four steps that turn the template into your own app.
+  // The steps that turn the template into your own app, plus a pointer to
+  // the Help page's full post-clone setup checklist (docs/help_en.md).
   Widget _buildGettingStartedCard(
     BuildContext context,
     AppLocalizations localizations,
@@ -108,6 +109,7 @@ class HomeView extends HookConsumerWidget {
       localizations.homeStepBranding,
       localizations.homeStepColor,
       localizations.homeStepBackend,
+      localizations.homeStepHelp,
     ];
 
     return Card(

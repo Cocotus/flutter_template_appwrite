@@ -10,6 +10,7 @@
   "homeStepBranding": "assets/images/logo.png ersetzen (1024×1024) und ausführen: dart run flutter_launcher_icons",
   "homeStepColor": "AppTheme.defaultSeedColor in lib/theme/app_theme.dart ändern — die gesamte Palette (inkl. Sidebar) leitet sich daraus ab.",
   "homeStepBackend": "Appwrite über config/app_config.json anbinden — oder ohne Backend im Demomodus weiter erkunden.",
+  "homeStepHelp": "Die vollständige Einrichtungs-Checkliste (Appwrite, GitHub-Actions-Secrets, GitHub-Pages-Hosting) steht auf der Hilfe-Seite in der Seitenleiste.",
   "homeDemoTitle": "Basis-Widgets",
   "homeDemoIntro": "Wiederverwendbare Formular-Elemente aus lib/widgets/ — nutze diese statt roher Material-Widgets, damit das Design konsistent bleibt. Das Formular hängt an einem Riverpod-Controller (home_controller.dart) mit Freezed-State.",
   "homeDemoRole": "Rolle",

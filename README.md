@@ -16,6 +16,16 @@ A **production-ready Flutter starter template** for **Web (first-class), Windows
 
 The app itself is an *empty but complete* shell — login/register, home, settings, profile, about, help and a developer log view — meant to be cloned and extended.
 
+**This README is the human setup and tutorial guide** — dev environment,
+configuration, hosting, monetization, and the step-by-step tutorial for
+turning this shell into your own app. The project also ships an
+**`AGENTS.md`**, a separate rulebook whose only job is keeping AI coding
+assistants (Claude, Cursor, Copilot, ...) consistent with this template's
+architecture and conventions instead of drifting into ad-hoc patterns when
+they work in this codebase — see §9 for how the two documents relate. You
+never need to read `AGENTS.md` yourself unless you're curious; it changes
+nothing about how you use the template as a human.
+
 ## Screenshots
 
 > _Placeholder — add screenshots of the login screen and the shell here._
@@ -504,6 +514,7 @@ Two more placeholders are **not** package-name occurrences, so the replace above
 |---|---|
 | `lib/views/shell/app_shell.dart` | `githubUrl` — `https://github.com/your-org/your-repo`, used by the header link *and* the About page |
 | `lib/views/help/help_view.dart` | `editUrlBase` — the "Edit on GitHub" link of the Help page |
+| `docs/help_en.md` / `help_de.md` | the "full README" link in the "Getting started with this template" chapter — plain Markdown text, not a Dart constant, so the global package-name replace above will not touch it |
 
 Consider moving both into `lib/config/app_config.dart` so the repository URL exists in exactly one place.
 
@@ -754,6 +765,7 @@ dart run build_runner watch
 - [ ] `pubspec.yaml`: `name` and `description` adjusted
 - [ ] `app_en.arb` and `app_de.arb`: `appTitle` set, `homeStepRename` fixed or removed
 - [ ] `githubUrl` in `app_shell.dart` and `editUrlBase` in `help_view.dart` point at your repository
+- [ ] The `https://github.com/your-org/your-repo#readme` link in `docs/help_en.md` / `help_de.md` points at your repository too
 - [ ] `LICENSE` copyright line updated
 - [ ] `assets/images/logo.png` replaced (1024×1024 px)
 - [ ] `dart run flutter_launcher_icons` executed
@@ -795,9 +807,9 @@ Two things still bite:
 - **`web/manifest.json` is not covered by the const** and is the one place people forget. The PWA then installs with the old brand color while the app itself uses the new one.
 - **Regenerate after changing it.** `user_settings.freezed.dart` bakes the default in at generation time, so the value only takes effect in the model once `dart run build_runner build` has run.
 
-#### Two dead placeholder URLs
+#### Dead placeholder URLs
 
-`https://github.com/your-org/your-repo` ships in `lib/views/shell/app_shell.dart` (`githubUrl`, used by the header **and** the About page) and `lib/views/help/help_view.dart` (`editUrlBase`). Both are on the checklist above.
+`https://github.com/your-org/your-repo` ships in three places: `lib/views/shell/app_shell.dart` (`githubUrl`, used by the header **and** the About page), `lib/views/help/help_view.dart` (`editUrlBase`), and as a plain Markdown link inside `docs/help_en.md` / `help_de.md`'s "Getting started with this template" chapter. All three are on the checklist above.
 
 ---
 
