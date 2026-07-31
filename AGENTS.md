@@ -536,7 +536,12 @@ Preferred control/event handling from the UI:
   **`dart run build_runner build`**; after changing ARB files, regenerate the
   localizations. (`--delete-conflicting-outputs` is obsolete on
   `build_runner` ≥ 2.15.)
-- Before reporting "done": **`flutter analyze` must run clean.** There is
+- Before reporting "done": **`flutter analyze` must report zero issues —
+  warnings included, not just errors.** `flutter analyze` exits non-zero on
+  any warning (e.g. an unused import), and the CI "Analyze" job fails the
+  whole run on that exit code regardless of severity — a lingering warning
+  is a red CI run, not a cosmetic nit. Don't leave a warning "for later" or
+  wave it off as harmless; remove or fix it immediately. There is
   deliberately no test suite (§8) — verify instead by actually running the
   app **in demo mode** (browser preview or similar), where applicable. Report
   results honestly; if something fails or is skipped, say so.
