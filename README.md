@@ -52,8 +52,8 @@ nothing about how you use the template as a human.
 ### Appwrite Cloud setup
 
 1. Create an account at [cloud.appwrite.io](https://cloud.appwrite.io) and create a **project**. Note the **Project ID** and the API **endpoint** (e.g. `https://cloud.appwrite.io/v1`).
-2. **Add a Web platform** to the project (Appwrite console → your project → *Overview* → *Add platform* → *Web*) and register the hostname you serve the app from — `localhost` for development, your production domain later.
-3. Make sure **Email/Password** authentication is enabled (*Auth* → *Settings*).
+2. **Add a Web platform** to the project (Appwrite console → your project → *Overview* → *Add platform* → *Web*) and register the hostname you serve the app from — `localhost` for development. For production, if you're deploying via GitHub Pages (§11), that's `<owner>.github.io` — Appwrite platforms are registered by hostname only, without a path, so the `/<repo>/` subpath doesn't need to be (and can't be) included. The console also asks you to pick a **framework** (React, Next.js, etc.) for its quickstart snippet — pick **JavaScript** (vanilla); Flutter isn't in that list, the choice has no effect on the platform/CORS config you just set, and you'll be using the Flutter SDK instead of whatever snippet it shows next anyway.
+3. Make sure **Email/Password** authentication is enabled (*Auth* → *Settings*). Leave the other auth methods listed there (**Anonymous**, **Invites**, **Magic URL**, **Email OTP**, **Phone**, **JWT**, and any **OAuth2** provider) switched off — this template only calls the email/password session API, so none of them are used, and each one left on is unused attack surface for no benefit (Anonymous in particular lets any unauthenticated client create a session by itself).
 4. **User settings: nothing to create.** Theme, language, accent, developer mode
    and the display name live in the user's **account preferences** — a JSON
    object Appwrite keeps on the account itself
@@ -171,7 +171,7 @@ Ignored entirely when `HAS_LOGIN` is `false` — leave these at their defaults i
 | `APPWRITE_PROJECT_ID` | — | Your project ID from the Appwrite console. Required whenever `HAS_LOGIN` is `true` — the app shows a clear runtime error if left empty in that case. |
 | `APPWRITE_DATABASE_ID` | `app` | The database holding this app's tables (logs, entitlements below). |
 | `APPWRITE_USER_DATA_BUCKET_ID` | `user_data` | Storage bucket holding one user-data file per signed-in user. User *settings* need no bucket — they live in the Appwrite account-preferences object instead. |
-| `PASSWORD_RECOVERY_URL` | `http://localhost:8080/reset-password` | URL Appwrite embeds in password-recovery e-mails — must point at this app's own `/reset-password` route (already implemented, see §1's "Password reset" section), just at whatever origin you actually serve the app from. That origin must be registered as a Web platform in the Appwrite console, otherwise recovery fails with a 400 error. |
+| `PASSWORD_RECOVERY_URL` | `http://localhost:8080/reset-password` | URL Appwrite embeds in password-recovery e-mails — must point at this app's own `/reset-password` route (already implemented, see §1's "Password reset" section), just at whatever origin you actually serve the app from. The default here is the local-dev value; for a GitHub Pages deployment (§11) use `https://<owner>.github.io/<repo>/reset-password` instead. That origin must be registered as a Web platform in the Appwrite console, otherwise recovery fails with a 400 error. |
 
 ### Premium / donate
 
@@ -345,10 +345,34 @@ Setup:
 1. **Appwrite:** create table `entitlements` with String columns `plan`,
    `orderId`, `purchasedAt`, `email`. Enable row security. Do **not** grant
    any table-level permissions to Users — only the function writes rows.
-2. **Function:** deploy `functions/lemonsqueezy-webhook/` (Node 18+ runtime,
-   entrypoint `src/main.js`, HTTP trigger, public execute access). Set env
-   vars `LS_SIGNING_SECRET` and `APPWRITE_API_KEY` (scopes: `rows.read`,
-   `rows.write`, `users.read`).
+2. **Function:** deploy `functions/lemonsqueezy-webhook/`. **Do not use the
+   Appwrite console's Functions → Templates → "Payments with Lemon
+   Squeezy"** instead — it's a different, unrelated implementation (its own
+   `orders` collection schema, its own env var names, and it also creates
+   checkout sessions server-side) that this app's
+   `PremiumGate`/`isPremiumProvider`/`DemoLicenseService` don't read from.
+   Deploy this repo's own function, not the marketplace one. Console setup:
+   - **Create function** → manual/blank creation, not a template.
+   - **Runtime:** Node.js, pick the **highest version offered**, not
+     specifically 18.0 — "Node 18+" is a floor, not a target. The code is a
+     plain ES module (`node:crypto` + the `node-appwrite` SDK) with nothing
+     tying it to an old runtime.
+   - **Entrypoint:** `src/main.js`.
+   - **Execute access:** **Any** (public). This has to be public — Lemon
+     Squeezy's webhook call carries no Appwrite session, only the
+     `X-Signature` HMAC header that `main.js` itself verifies. Restricting
+     execute access to Users/Guests would make Appwrite reject the webhook
+     before the function ever runs; the signature check inside the function
+     is the real security boundary, not Appwrite's execute permissions.
+   - **Connect to Git:** point it at your repo, branch `main`, and set
+     **Root directory** to `functions/lemonsqueezy-webhook` — this is a
+     monorepo, the repo root has the Flutter app, not this function's
+     `package.json`, so the deploy fails without it.
+   - **Variables** (Settings → Environment variables, after creation): set
+     `LS_SIGNING_SECRET` and `APPWRITE_API_KEY` (scopes: `rows.read`,
+     `rows.write`, `users.read`).
+   - After the first deploy, grab the function's public URL from the
+     **Domains** tab for the Lemon Squeezy webhook config in step 3 below.
 3. **Lemon Squeezy:** create a product (one-time purchase), copy its "buy
    link" into `PREMIUM_CHECKOUT_URL` in `config/app_config.json`, and add a
    webhook (event `order_created`) pointing at the function's URL with the
