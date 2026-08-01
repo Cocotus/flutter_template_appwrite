@@ -219,6 +219,32 @@ class AppLocalizationsEn extends AppLocalizations {
       'If this email is registered, a reset link has been sent';
 
   @override
+  String get resetPasswordTitle => 'Reset your password';
+
+  @override
+  String get resetPasswordIntro => 'Enter a new password for your account.';
+
+  @override
+  String get resetPasswordSubmit => 'Set new password';
+
+  @override
+  String get resetPasswordSuccessTitle => 'Password updated';
+
+  @override
+  String get resetPasswordSuccessMessage =>
+      'Your password has been reset. You can now log in with your new password.';
+
+  @override
+  String get resetPasswordInvalidLinkTitle => 'Link invalid or expired';
+
+  @override
+  String get resetPasswordInvalidLinkMessage =>
+      'This password reset link is invalid or has expired. Request a new one from the login page.';
+
+  @override
+  String get backToLogin => 'Back to login';
+
+  @override
   String get errorEmailAlreadyExists => 'This email is already registered';
 
   @override

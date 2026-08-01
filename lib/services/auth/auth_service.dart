@@ -45,14 +45,8 @@ class AuthService {
   }
 
   /// Creates an email/password session for the given credentials.
-  Future<void> login({
-    required String email,
-    required String password,
-  }) async {
-    await _account.createEmailPasswordSession(
-      email: email,
-      password: password,
-    );
+  Future<void> login({required String email, required String password}) async {
+    await _account.createEmailPasswordSession(email: email, password: password);
   }
 
   /// Returns the currently logged-in user.
@@ -70,14 +64,31 @@ class AuthService {
 
   /// Sends a password recovery email to [email].
   ///
-  /// The recovery link points to [AppConfig.passwordRecoveryUrl]; its origin
+  /// The recovery link points to [AppConfig.passwordRecoveryUrl] (this app's
+  /// own `/reset-password` route — see `ResetPasswordView`), whose origin
   /// must be registered as a Web platform in the Appwrite console.
-  /// Completing the reset (`account.updateRecovery`) is a documented TODO —
-  /// see the README's Appwrite setup section.
   Future<void> sendPasswordReset(String email) async {
     await _account.createRecovery(
       email: email,
       url: AppConfig.passwordRecoveryUrl,
+    );
+  }
+
+  /// Completes a password reset started by [sendPasswordReset].
+  ///
+  /// [userId] and [secret] come from the query parameters of the recovery
+  /// link Appwrite emailed (see `ResetPasswordView`). Throws an
+  /// [AppwriteException] with code `401` if the link is invalid or has
+  /// expired (the email's link is valid for 1 hour).
+  Future<void> completePasswordReset({
+    required String userId,
+    required String secret,
+    required String password,
+  }) async {
+    await _account.updateRecovery(
+      userId: userId,
+      secret: secret,
+      password: password,
     );
   }
 }

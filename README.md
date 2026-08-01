@@ -61,14 +61,6 @@ nothing about how you use the template as a human.
    permissions, and adding a new setting never touches the Appwrite console.
    The limit is **64 kB per user**. See
    [`CloudSyncService`](lib/services/cloud_sync_service.dart).
-
-   > Earlier versions of this template mapped `UserSettings` field-per-column
-   > into a `user_settings` table. That made every new setting a console change
-   > that had to land *before* the client shipped — Appwrite rejects a write
-   > containing an undeclared attribute outright (`Unknown attribute`), so a
-   > forgotten column was not a missing value but a failed save. If you are
-   > upgrading an existing app, see "Migrating from the `user_settings` table"
-   > below.
 5. **User data: create a Storage bucket** `user_data` (*Storage* → *Create
    bucket*), for everything the user *creates* — which is unbounded and will
    eventually outgrow 64 kB. See [`UserData`](lib/models/user_data.dart).
@@ -84,25 +76,44 @@ nothing about how you use the template as a human.
    want the optional features below. Settings and user data do not need one.
 7. *(Optional, for remote logging)* create a table `logs` with columns `level` (String), `message` (String), `stackTrace` (String, size ~16384), `timestamp` (String), `userId` (String), and grant **Create** to role **Users**.
 8. *(Optional, for premium licensing)* create a table `entitlements` — see section 7 "Premium licensing / monetization" below for columns, permissions and the webhook function.
-9. **Password reset (TODO for your app):** this template calls `account.createRecovery(...)` to send the reset email. The page that *completes* the reset (reads the `userId`/`secret` URL parameters and calls `account.updateRecovery(...)`) is **not implemented** in this template — you must add it. The `PASSWORD_RECOVERY_URL` in the config is a placeholder.
+9. **Password reset is already built in.** `account.createRecovery(...)`
+   sends the reset email, and the app's own `/reset-password` route
+   completes it via `account.updateRecovery(...)` — see
+   [`ResetPasswordView`](lib/views/reset_password/reset_password_view.dart)
+   and the "Password reset" section right below. You only need to set
+   `PASSWORD_RECOVERY_URL` to match wherever you serve the app, and register
+   that origin as a Web platform in the Appwrite console.
 
-### Migrating from the `user_settings` table
+### Password reset
 
-If your app was built from an older revision of this template, it has a
-`user_settings` table with one column per setting. To move to preferences +
-bucket:
+Fully implemented end to end — nothing left to build:
 
-1. Create the `user_data` bucket (step 5 above) and swap
-   `APPWRITE_USER_SETTINGS_TABLE_ID` for `APPWRITE_USER_DATA_BUCKET_ID` in your
-   config.
-2. Ship the new build. Existing users keep their local `shared_preferences`
-   copy, so nothing visibly changes for them; their first Save writes the
-   preferences object and the bucket file.
-3. Users who sign in on a *fresh* device before ever pressing Save will get
-   defaults, because the old table is no longer read. If that matters, keep the
-   old table around and add a one-time read from it in `CloudSyncService.pull`
-   when the preferences object is empty; delete that branch a release later.
-4. Once nothing reads it, delete the `user_settings` table in the console.
+```
+Login page "Forgot password?" ──▶ account.createRecovery(email, url: PASSWORD_RECOVERY_URL)
+                                          │ Appwrite emails a link (valid 1 hour):
+                                          │   PASSWORD_RECOVERY_URL?userId=...&secret=...
+                                          ▼
+                        App's own /reset-password route (ResetPasswordView)
+                                          │ reads userId/secret from the URL,
+                                          │ user enters a new password
+                                          ▼
+                        account.updateRecovery(userId, secret, password)
+```
+
+- The `/reset-password` route is registered outside the authenticated shell
+  and is exempt from the router's auth guard (see `AppRouter`) — whoever
+  clicks the emailed link may not have a session on this device at all.
+- Missing or empty `userId`/`secret` (someone opening the bare URL, or an
+  already-used link with the parameters stripped) shows an "invalid or
+  expired link" message instead of a broken form.
+- An expired or already-used link fails at submit time with an
+  `AppwriteException` (code `401`), shown as the same "invalid or expired"
+  message rather than a generic error.
+- **Set `PASSWORD_RECOVERY_URL` to match wherever you actually serve the
+  app**, e.g. `https://your-domain.com/reset-password` or
+  `https://<user>.github.io/<repo>/reset-password` for a GitHub Pages
+  deployment (§11) — and register that origin as a Web platform in the
+  Appwrite console, or the email link will 400.
 
 ## 2. Configure the project
 
@@ -160,7 +171,7 @@ Ignored entirely when `HAS_LOGIN` is `false` — leave these at their defaults i
 | `APPWRITE_PROJECT_ID` | — | Your project ID from the Appwrite console. Required whenever `HAS_LOGIN` is `true` — the app shows a clear runtime error if left empty in that case. |
 | `APPWRITE_DATABASE_ID` | `app` | The database holding this app's tables (logs, entitlements below). |
 | `APPWRITE_USER_DATA_BUCKET_ID` | `user_data` | Storage bucket holding one user-data file per signed-in user. User *settings* need no bucket — they live in the Appwrite account-preferences object instead. |
-| `PASSWORD_RECOVERY_URL` | `http://localhost:8080/reset-password` | URL Appwrite embeds in password-recovery e-mails. Its origin must be registered as a Web platform in the Appwrite console, otherwise recovery fails with a 400 error. |
+| `PASSWORD_RECOVERY_URL` | `http://localhost:8080/reset-password` | URL Appwrite embeds in password-recovery e-mails — must point at this app's own `/reset-password` route (already implemented, see §1's "Password reset" section), just at whatever origin you actually serve the app from. That origin must be registered as a Web platform in the Appwrite console, otherwise recovery fails with a 400 error. |
 
 ### Premium / donate
 

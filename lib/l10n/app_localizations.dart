@@ -518,6 +518,54 @@ abstract class AppLocalizations {
   /// **'If this email is registered, a reset link has been sent'**
   String get resetPasswordSent;
 
+  /// No description provided for @resetPasswordTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Reset your password'**
+  String get resetPasswordTitle;
+
+  /// No description provided for @resetPasswordIntro.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter a new password for your account.'**
+  String get resetPasswordIntro;
+
+  /// No description provided for @resetPasswordSubmit.
+  ///
+  /// In en, this message translates to:
+  /// **'Set new password'**
+  String get resetPasswordSubmit;
+
+  /// No description provided for @resetPasswordSuccessTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Password updated'**
+  String get resetPasswordSuccessTitle;
+
+  /// No description provided for @resetPasswordSuccessMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'Your password has been reset. You can now log in with your new password.'**
+  String get resetPasswordSuccessMessage;
+
+  /// No description provided for @resetPasswordInvalidLinkTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Link invalid or expired'**
+  String get resetPasswordInvalidLinkTitle;
+
+  /// No description provided for @resetPasswordInvalidLinkMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'This password reset link is invalid or has expired. Request a new one from the login page.'**
+  String get resetPasswordInvalidLinkMessage;
+
+  /// No description provided for @backToLogin.
+  ///
+  /// In en, this message translates to:
+  /// **'Back to login'**
+  String get backToLogin;
+
   /// No description provided for @errorEmailAlreadyExists.
   ///
   /// In en, this message translates to:

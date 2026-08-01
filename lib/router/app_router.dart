@@ -14,6 +14,7 @@ import 'package:flutter_template_appwrite/views/home/home_view.dart';
 import 'package:flutter_template_appwrite/views/login/login_view.dart';
 import 'package:flutter_template_appwrite/views/logs/logs_view.dart';
 import 'package:flutter_template_appwrite/views/profile/profile_view.dart';
+import 'package:flutter_template_appwrite/views/reset_password/reset_password_view.dart';
 import 'package:flutter_template_appwrite/views/settings/settings_view.dart';
 import 'package:flutter_template_appwrite/views/shell/app_shell.dart';
 import 'package:flutter_template_appwrite/views/splash/splash_view.dart';
@@ -33,6 +34,11 @@ class AppRoutes {
 
   /// The login/register screen (the only unauthenticated page).
   static const String login = '/login';
+
+  /// Completes a password reset from the link Appwrite emails — see
+  /// `AuthService.sendPasswordReset` / [ResetPasswordView]. Reachable
+  /// regardless of auth state: it is exempt from the guard below.
+  static const String resetPassword = '/reset-password';
 
   /// The home page inside the authenticated shell.
   static const String home = '/';
@@ -72,13 +78,12 @@ GoRouter goRouter(Ref ref) {
   // Re-evaluate the redirect whenever the auth state changes.
   final ValueNotifier<int> authChangeNotifier = ValueNotifier<int>(0);
   ref.onDispose(authChangeNotifier.dispose);
-  ref.listen(
-    currentUserProvider,
-    (AsyncValue<appwrite_models.User?>? previous,
-        AsyncValue<appwrite_models.User?> next) {
-      authChangeNotifier.value = authChangeNotifier.value + 1;
-    },
-  );
+  ref.listen(currentUserProvider, (
+    AsyncValue<appwrite_models.User?>? previous,
+    AsyncValue<appwrite_models.User?> next,
+  ) {
+    authChangeNotifier.value = authChangeNotifier.value + 1;
+  });
 
   return GoRouter(
     initialLocation: AppRoutes.home,
@@ -91,6 +96,13 @@ GoRouter goRouter(Ref ref) {
       final bool isOnSplashPage = location == AppRoutes.splash;
       final bool isOnLoginPage = location == AppRoutes.login;
 
+      // Reachable regardless of auth state: whoever clicks the emailed
+      // recovery link may or may not have a session on this device, and
+      // either way this page must not bounce them to /login or the shell.
+      if (location == AppRoutes.resetPassword) {
+        return null;
+      }
+
       // When login is disabled (freeware/public mode), the app always goes
       // straight to the shell — no auth check, no login page.
       if (!AppConfig.hasLogin) {
@@ -100,8 +112,9 @@ GoRouter goRouter(Ref ref) {
         return null;
       }
 
-      final AsyncValue<appwrite_models.User?> authState =
-          ref.read(currentUserProvider);
+      final AsyncValue<appwrite_models.User?> authState = ref.read(
+        currentUserProvider,
+      );
 
       // Only treat this as the startup check when there is no previous
       // value yet. On logout/refresh, `currentUserProvider` briefly goes
@@ -146,17 +159,29 @@ GoRouter goRouter(Ref ref) {
           return const LoginView();
         },
       ),
+      GoRoute(
+        path: AppRoutes.resetPassword,
+        builder: (BuildContext context, GoRouterState state) {
+          // Appwrite appends these as query parameters to the recovery link
+          // (see AuthService.sendPasswordReset / AppConfig.passwordRecoveryUrl).
+          return ResetPasswordView(
+            userId: state.uri.queryParameters['userId'],
+            secret: state.uri.queryParameters['secret'],
+          );
+        },
+      ),
       // The authenticated shell: a persistent sidebar with one navigator
       // per tab (indexed stack), so every tab keeps its own state and the
       // browser URL/back button still work correctly.
       StatefulShellRoute.indexedStack(
-        builder: (
-          BuildContext context,
-          GoRouterState state,
-          StatefulNavigationShell navigationShell,
-        ) {
-          return AppShell(navigationShell: navigationShell);
-        },
+        builder:
+            (
+              BuildContext context,
+              GoRouterState state,
+              StatefulNavigationShell navigationShell,
+            ) {
+              return AppShell(navigationShell: navigationShell);
+            },
         branches: <StatefulShellBranch>[
           _buildBranch(talker, AppRoutes.home, const HomeView()),
           _buildBranch(talker, AppRoutes.settings, const SettingsView()),

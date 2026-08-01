@@ -220,6 +220,32 @@ class AppLocalizationsDe extends AppLocalizations {
       'Falls diese E-Mail registriert ist, wurde ein Link zum Zurücksetzen gesendet';
 
   @override
+  String get resetPasswordTitle => 'Passwort zurücksetzen';
+
+  @override
+  String get resetPasswordIntro => 'Gib ein neues Passwort für dein Konto ein.';
+
+  @override
+  String get resetPasswordSubmit => 'Neues Passwort setzen';
+
+  @override
+  String get resetPasswordSuccessTitle => 'Passwort aktualisiert';
+
+  @override
+  String get resetPasswordSuccessMessage =>
+      'Dein Passwort wurde zurückgesetzt. Du kannst dich jetzt mit dem neuen Passwort anmelden.';
+
+  @override
+  String get resetPasswordInvalidLinkTitle => 'Link ungültig oder abgelaufen';
+
+  @override
+  String get resetPasswordInvalidLinkMessage =>
+      'Dieser Link zum Zurücksetzen des Passworts ist ungültig oder abgelaufen. Fordere einen neuen über die Login-Seite an.';
+
+  @override
+  String get backToLogin => 'Zurück zum Login';
+
+  @override
   String get errorEmailAlreadyExists => 'Diese E-Mail ist bereits registriert';
 
   @override

@@ -88,8 +88,16 @@ class AppConfig {
 
   /// The URL that Appwrite embeds in password recovery emails.
   ///
-  /// The origin of this URL must be registered as a Web platform in the
-  /// Appwrite console, otherwise `createRecovery` fails with a 400 error.
+  /// Must point at this app's own `/reset-password` route (see
+  /// `AppRoutes.resetPassword` / `ResetPasswordView`), which completes the
+  /// reset — this is a real, working page, not a placeholder to build
+  /// yourself. The default assumes `flutter run -d chrome --web-port 8080`;
+  /// update it to match wherever you actually serve the app (e.g.
+  /// `https://your-domain.com/reset-password`, or
+  /// `https://<user>.github.io/<repo>/reset-password` for GitHub Pages —
+  /// see README §11). The origin of this URL must be registered as a Web
+  /// platform in the Appwrite console, otherwise `createRecovery` fails with
+  /// a 400 error.
   static const String passwordRecoveryUrl = String.fromEnvironment(
     'PASSWORD_RECOVERY_URL',
     defaultValue: 'http://localhost:8080/reset-password',

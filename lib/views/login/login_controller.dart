@@ -27,10 +27,7 @@ class LoginController extends _$LoginController {
   ///
   /// On success the auth state is refreshed (which makes the router leave
   /// the login page) and the user's settings are loaded from Appwrite.
-  Future<void> login({
-    required String email,
-    required String password,
-  }) async {
+  Future<void> login({required String email, required String password}) async {
     final LoggerService logger = ref.read(loggerServiceProvider);
     // Never log the full email address (PII) — redact it first.
     logger.info('Login attempt (${redactEmail(email)})');
@@ -76,11 +73,7 @@ class LoginController extends _$LoginController {
 
     try {
       final AuthService authService = ref.read(authServiceProvider);
-      await authService.register(
-        email: email,
-        password: password,
-        name: name,
-      );
+      await authService.register(email: email, password: password, name: name);
       await authService.login(email: email, password: password);
 
       // Let the router guard know that a session now exists.
@@ -100,9 +93,9 @@ class LoginController extends _$LoginController {
 
   /// Sends a password recovery email to [email].
   ///
-  /// This only triggers the email (`account.createRecovery`); building the
-  /// page that completes the reset via `account.updateRecovery` is a
-  /// documented TODO — see the README.
+  /// This only triggers the email (`account.createRecovery`); the emailed
+  /// link points at this app's own `/reset-password` route, which completes
+  /// the reset via `account.updateRecovery` — see `ResetPasswordController`.
   Future<void> sendPasswordReset(String email) async {
     final LoggerService logger = ref.read(loggerServiceProvider);
     logger.info('Password reset requested (${redactEmail(email)})');

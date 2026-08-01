@@ -22,10 +22,7 @@ class DemoAuthService implements AuthService {
   bool _isLoggedIn = false;
 
   @override
-  Future<void> login({
-    required String email,
-    required String password,
-  }) async {
+  Future<void> login({required String email, required String password}) async {
     // Any credentials are accepted in demo mode.
     _isLoggedIn = true;
   }
@@ -56,5 +53,16 @@ class DemoAuthService implements AuthService {
   @override
   Future<void> sendPasswordReset(String email) async {
     // No email is sent in demo mode.
+  }
+
+  @override
+  Future<void> completePasswordReset({
+    required String userId,
+    required String secret,
+    required String password,
+  }) async {
+    // No real account to update in demo mode. `ResetPasswordView` is only
+    // ever reached via a real emailed link, which demo mode never sends —
+    // this exists purely so DemoAuthService keeps implementing AuthService.
   }
 }
