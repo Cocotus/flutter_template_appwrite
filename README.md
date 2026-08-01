@@ -608,6 +608,30 @@ The logo image is also displayed in the app itself (e.g. splash screen or login 
 Image.asset('assets/images/logo.png')
 ```
 
+**Also rewrite: the README, the in-app help manual, and the About page text.**
+The logo is the obvious thing to replace, but three text artifacts are just as
+visible to a real user and are easy to leave untouched simply because nothing
+forces you to look at them:
+
+- **`README.md`** (this file) — ships describing the *template*, not your
+  app. Once you have a real product, replace it with documentation of what
+  your app actually does and how to configure it, and link back to this
+  template's README/`AGENTS.md` for the generic Flutter/Appwrite mechanics
+  instead of duplicating them — see how [`camex`](https://github.com/Cocotus/camex)
+  (a real app built from this template) restructured its own README this way.
+- **`docs/help_en.md` / `help_de.md`** — the in-app Help page renders these
+  verbatim. Left alone, a real user opens Help and reads the template's own
+  placeholder text ("This is the placeholder user manual of the starter
+  template...") instead of anything about your app.
+- **`aboutDescription`** in `app_en.arb` / `app_de.arb` — shown on the About
+  page. Left alone, it reads "A starter template built with Riverpod 3,
+  Freezed, go_router, Talker and Appwrite Cloud" instead of describing your
+  app.
+
+None of these three cause a build error or an analyzer warning if skipped —
+which is exactly why they're easy to ship by accident. Add them to your own
+checklist alongside the logo.
+
 ---
 
 ### Step 5 — Localization: adding new text strings
@@ -817,6 +841,7 @@ dart run build_runner watch
 - [ ] `LICENSE` copyright line updated
 - [ ] `assets/images/logo.png` replaced (1024×1024 px)
 - [ ] `dart run flutter_launcher_icons` executed
+- [ ] `README.md`, `docs/help_en.md`/`help_de.md` and `aboutDescription` rewritten for your app — none of these fail a build or `flutter analyze` if left as template placeholder text, so nothing else will catch it for you ([Step 4](#step-4--replace-the-logo--app-icon))
 - [ ] `AppTheme.defaultSeedColorValue` in `app_theme.dart` adjusted (the single Dart source of truth)
 - [ ] `theme_color` in `web/manifest.json` matches it — not covered by the const
 - [ ] Default `AccentColor` entry in `accent_colors.dart` points to `AppTheme.defaultSeedColor`
