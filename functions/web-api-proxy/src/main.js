@@ -86,14 +86,19 @@ export default async ({ req, res, log, error }) => {
 
   // 2) The Flutter app passes the URL it actually wants as a single query
   //    parameter: /?url=<the%20real%20url%2C%20url-encoded>
-  const target = req.query.url;
-  if (!target) {
+  //
+  //    Appwrite's `req.query` does NOT percent-decode values the way a
+  //    browser's URLSearchParams would -- `req.query.url` arrives exactly as
+  //    it was sent on the wire (still percent-encoded), so it must be
+  //    decoded explicitly here before it is a usable URL.
+  const rawTarget = req.query.url;
+  if (!rawTarget) {
     return res.json({ error: 'Missing "url" query parameter' }, 400);
   }
 
   let parsedTarget;
   try {
-    parsedTarget = new URL(target);
+    parsedTarget = new URL(decodeURIComponent(rawTarget));
   } catch {
     return res.json({ error: 'Invalid "url" query parameter' }, 400);
   }
