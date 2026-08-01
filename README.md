@@ -923,12 +923,29 @@ template.
 
 ### If you want the real backend on the public site instead
 
-Drop `--dart-define=DEMO_MODE_ALLOWED=true` and add the `--dart-define`s
-from [§2](#2-configure-the-project) sourced from repository secrets/variables instead of
-`config/app_config.json`. Not recommended for a public template showcase —
-it exposes your Appwrite project ID and requires registering the Pages
-origin as a Web platform in Appwrite — but it's the same mechanism either
-way.
+> **Trap:** editing `config/app_config.json` by itself has **no effect** on
+> a GitHub Pages deploy. The build step in `.github/workflows/gh-pages.yml`
+> passes its own hardcoded `--dart-define=DEMO_MODE_ALLOWED=true` and never
+> reads that file at all — so changing `HAS_LOGIN`, your Appwrite project
+> ID, or anything else in the JSON silently does nothing until the workflow
+> itself is edited to actually pick those values up.
+
+Two ways to fix the workflow, depending on whether the file has secrets in it:
+
+- **If `config/app_config.json` is committed to your repo and contains no
+  secrets** (true for every value this template ships — see the note on
+  [§2](#2-configure-the-project)'s gitignore tip — since API keys and
+  signing secrets only ever live in Appwrite Function environment
+  variables, never in this file): simplest fix is to replace
+  `--dart-define=DEMO_MODE_ALLOWED=true` in the `flutter build web` step
+  with `--dart-define-from-file=config/app_config.json`, so the workflow
+  builds from the exact same file you already maintain locally.
+- **If you'd rather not commit the file at all** (e.g. this is still the
+  public template showcase, not your own product fork): drop
+  `--dart-define=DEMO_MODE_ALLOWED=true` and add the individual
+  `--dart-define`s from [§2](#2-configure-the-project) sourced from
+  repository secrets/variables instead. Registering the Pages origin as a
+  Web platform in Appwrite is required either way.
 
 ---
 
