@@ -11,8 +11,8 @@ A **production-ready Flutter starter template** for **Web (first-class), Windows
 - **Admin-dashboard design**: full-height dark sidebar (accent-tinted, grouped menu sections, user card + logout at the bottom) with a light page header over the content area; bundled **Inter** font
 - **In-app Markdown docs**: the Help page renders a checked-in user manual (`docs/help_<locale>.md`) — versioned with the code, works offline
 - **Reusable base widgets** (`lib/widgets/`): text/password fields, dropdown, switch tile, primary/secondary buttons with loading spinner, section headers — the Home page demonstrates them live, wired to a Riverpod controller
-- **Offline / intranet ready**: no Google Fonts or other runtime CDN fetches required (see the offline section below)
-- **Optional premium licensing**: a one-time-purchase flow (Lemon Squeezy checkout → webhook → Appwrite `entitlements` table) with a ready-made `PremiumGate` widget — see the monetization section below
+- **Offline / intranet ready**: no Google Fonts or other runtime CDN fetches required (see ["Offline / intranet deployments"](#offline--intranet-deployments) below)
+- **Optional premium licensing**: a one-time-purchase flow (Lemon Squeezy checkout → webhook → Appwrite `entitlements` table) with a ready-made `PremiumGate` widget — see [§7, "Premium licensing / monetization"](#7-premium-licensing--monetization-optional) below
 
 The app itself is an *empty but complete* shell — login/register, home, settings, profile, about, help and a developer log view — meant to be cloned and extended.
 
@@ -22,7 +22,7 @@ turning this shell into your own app. The project also ships an
 **`AGENTS.md`**, a separate rulebook whose only job is keeping AI coding
 assistants (Claude, Cursor, Copilot, ...) consistent with this template's
 architecture and conventions instead of drifting into ad-hoc patterns when
-they work in this codebase — see §9 for how the two documents relate. You
+they work in this codebase — see [§9, "Coding conventions"](#9-coding-conventions) for how the two documents relate. You
 never need to read `AGENTS.md` yourself unless you're curious; it changes
 nothing about how you use the template as a human.
 
@@ -52,7 +52,7 @@ nothing about how you use the template as a human.
 ### Appwrite Cloud setup
 
 1. Create an account at [cloud.appwrite.io](https://cloud.appwrite.io) and create a **project**. Note the **Project ID** and the API **endpoint** (e.g. `https://cloud.appwrite.io/v1`).
-2. **Add a Web platform** to the project (Appwrite console → your project → *Overview* → *Add platform* → *Web*) and register the hostname you serve the app from — `localhost` for development. For production, if you're deploying via GitHub Pages (§11), that's `<owner>.github.io` — Appwrite platforms are registered by hostname only, without a path, so the `/<repo>/` subpath doesn't need to be (and can't be) included. The console also asks you to pick a **framework** (React, Next.js, etc.) for its quickstart snippet — pick **JavaScript** (vanilla); Flutter isn't in that list, the choice has no effect on the platform/CORS config you just set, and you'll be using the Flutter SDK instead of whatever snippet it shows next anyway. Keep this list to exactly the origins you actually serve the app from — `localhost` plus your production domain, nothing else, and no wildcard — since every registered platform is an origin Appwrite trusts for CORS/OAuth; check *Overview* → *Platforms* occasionally and remove anything you no longer use.
+2. **Add a Web platform** to the project (Appwrite console → your project → *Overview* → *Add platform* → *Web*) and register the hostname you serve the app from — `localhost` for development. For production, if you're deploying via GitHub Pages ([§11](#11-hosting-on-github-pages)), that's `<owner>.github.io` — Appwrite platforms are registered by hostname only, without a path, so the `/<repo>/` subpath doesn't need to be (and can't be) included. The console also asks you to pick a **framework** (React, Next.js, etc.) for its quickstart snippet — pick **JavaScript** (vanilla); Flutter isn't in that list, the choice has no effect on the platform/CORS config you just set, and you'll be using the Flutter SDK instead of whatever snippet it shows next anyway. Keep this list to exactly the origins you actually serve the app from — `localhost` plus your production domain, nothing else, and no wildcard — since every registered platform is an origin Appwrite trusts for CORS/OAuth; check *Overview* → *Platforms* occasionally and remove anything you no longer use.
 3. Make sure **Email/Password** authentication is enabled (*Auth* → *Settings*). Leave the other auth methods listed there (**Anonymous**, **Invites**, **Magic URL**, **Email OTP**, **Phone**, **JWT**, and any **OAuth2** provider) switched off — this template only calls the email/password session API, so none of them are used, and each one left on is unused attack surface for no benefit (Anonymous in particular lets any unauthenticated client create a session by itself).
 4. **User settings: nothing to create.** Theme, language, accent, developer mode
    and the display name live in the user's **account preferences** — a JSON
@@ -75,13 +75,13 @@ nothing about how you use the template as a human.
 6. Create a **Database** (default ID used by this template: `app`) only if you
    want the optional features below. Settings and user data do not need one.
 7. *(Optional, for remote logging)* create a table `logs` with columns `level` (String), `message` (String), `stackTrace` (String, size ~16384), `timestamp` (String), `userId` (String), and grant **Create** to role **Users**.
-8. *(Optional, for premium licensing)* create a table `entitlements` — see section 7 "Premium licensing / monetization" below for columns, permissions and the webhook function.
-9. *(Optional, for calling external REST APIs from Flutter Web without hitting CORS)* deploy the `web-api-proxy` Appwrite Function — see section 12 "Calling external REST APIs from Flutter Web (CORS proxy demo)" below for setup and how it works.
+8. *(Optional, for premium licensing)* create a table `entitlements` — see [section 7, "Premium licensing / monetization"](#7-premium-licensing--monetization-optional) below for columns, permissions and the webhook function.
+9. *(Optional, for calling external REST APIs from Flutter Web without hitting CORS)* deploy the `web-api-proxy` Appwrite Function — see [section 12, "Calling external REST APIs from Flutter Web (CORS proxy demo)"](#12-calling-external-rest-apis-from-flutter-web-cors-proxy-demo) below for setup and how it works.
 10. **Password reset is already built in.** `account.createRecovery(...)`
    sends the reset email, and the app's own `/reset-password` route
    completes it via `account.updateRecovery(...)` — see
    [`ResetPasswordView`](lib/views/reset_password/reset_password_view.dart)
-   and the "Password reset" section right below. You only need to set
+   and the ["Password reset"](#password-reset) section right below. You only need to set
    `PASSWORD_RECOVERY_URL` to match wherever you serve the app, and register
    that origin as a Web platform in the Appwrite console.
 
@@ -113,7 +113,7 @@ Login page "Forgot password?" ──▶ account.createRecovery(email, url: PASSW
 - **Set `PASSWORD_RECOVERY_URL` to match wherever you actually serve the
   app**, e.g. `https://your-domain.com/reset-password` or
   `https://<user>.github.io/<repo>/reset-password` for a GitHub Pages
-  deployment (§11) — and register that origin as a Web platform in the
+  deployment ([§11](#11-hosting-on-github-pages)) — and register that origin as a Web platform in the
   Appwrite console, or the email link will 400.
 
 ## 2. Configure the project
@@ -130,6 +130,18 @@ cp config/app_config.example.json config/app_config.json
 > `app_config.example.json` itself has no effect on a running app; always
 > make your changes in the copy **without** `.example` in the name.
 > `config/app_config.json` is **gitignored** — no secrets are ever committed.
+>
+> **Tip — no local checkout?** If you're only setting this up for a GitHub
+> Pages deployment ([§11](#11-hosting-on-github-pages)) and haven't cloned the
+> repo locally, you can create this file straight from the GitHub web UI:
+> open the `config/` folder in your repo → **Add file → Create new file** →
+> name it `app_config.json` → paste in the JSON below with your real values →
+> commit directly to `main`. Committing it this way still tracks it in git
+> normally — `.gitignore` only stops it from being picked up by a broad
+> `git add`, it doesn't block an explicit add/commit of that exact path —
+> and the GitHub Actions workflow needs it committed to build from it, since
+> a gitignored file that was never committed simply doesn't exist in the
+> checkout CI runs from.
 
 ```json
 {
@@ -172,11 +184,11 @@ Ignored entirely when `HAS_LOGIN` is `false` — leave these at their defaults i
 | `APPWRITE_PROJECT_ID` | — | Your project ID from the Appwrite console. Required whenever `HAS_LOGIN` is `true` — the app shows a clear runtime error if left empty in that case. |
 | `APPWRITE_DATABASE_ID` | `app` | The database holding this app's tables (logs, entitlements below). |
 | `APPWRITE_USER_DATA_BUCKET_ID` | `user_data` | Storage bucket holding one user-data file per signed-in user. User *settings* need no bucket — they live in the Appwrite account-preferences object instead. |
-| `PASSWORD_RECOVERY_URL` | `http://localhost:8080/reset-password` | URL Appwrite embeds in password-recovery e-mails — must point at this app's own `/reset-password` route (already implemented, see §1's "Password reset" section), just at whatever origin you actually serve the app from. The default here is the local-dev value; for a GitHub Pages deployment (§11) use `https://<owner>.github.io/<repo>/reset-password` instead. That origin must be registered as a Web platform in the Appwrite console, otherwise recovery fails with a 400 error. |
+| `PASSWORD_RECOVERY_URL` | `http://localhost:8080/reset-password` | URL Appwrite embeds in password-recovery e-mails — must point at this app's own `/reset-password` route (already implemented, see [§1, "Password reset"](#password-reset) section), just at whatever origin you actually serve the app from. The default here is the local-dev value; for a GitHub Pages deployment ([§11](#11-hosting-on-github-pages)) use `https://<owner>.github.io/<repo>/reset-password` instead. That origin must be registered as a Web platform in the Appwrite console, otherwise recovery fails with a 400 error. |
 
 ### Premium / donate
 
-Which half applies depends on `HAS_PREMIUM` above (section 7 covers the premium feature in full).
+Which half applies depends on `HAS_PREMIUM` above ([§7, "Premium licensing / monetization"](#7-premium-licensing--monetization-optional) covers the premium feature in full).
 
 | Key | Default | Purpose |
 |---|---|---|
@@ -512,9 +524,9 @@ These references must be updated **everywhere** in the project:
 | `web/index.html` | `<title>` |
 | `web/manifest.json` | `"name"` and `"short_name"` |
 | `LICENSE` | the copyright line |
-| `lib/l10n/app_en.arb`, `app_de.arb` | `appTitle` (Step 3) — and see the warning below |
+| `lib/l10n/app_en.arb`, `app_de.arb` | `appTitle` ([Step 3](#step-3--app-title-window-title--appbar-title)) — and see the warning below |
 
-This template targets **Web, Windows and Linux only** (see section 1) — there is no `android/`/`ios/` folder to rename.
+This template targets **Web, Windows and Linux only** (see [§1, "Dev environment setup"](#1-dev-environment-setup)) — there is no `android/`/`ios/` folder to rename.
 
 **Do this with a scripted replace, not by hand.** `lib/` alone contains 161 occurrences across 43 files:
 
@@ -541,7 +553,7 @@ flutter pub get
 > `homeStepRename` in `lib/l10n/app_en.arb` / `app_de.arb` contains the literal
 > `flutter_template_appwrite` inside a sentence rendered on the demo home page.
 > After the replace it will read "find & replace my_tool with your app name".
-> That is harmless if you retire the demo home (Step 8), but fix or delete the
+> That is harmless if you retire the demo home ([Step 8](#step-8--add-a-new-route-with-go_router)), but fix or delete the
 > key if you keep it.
 
 Two more placeholders are **not** package-name occurrences, so the replace above will not catch them:
@@ -561,7 +573,7 @@ Consider moving both into `lib/config/app_config.dart` so the repository URL exi
 The title that appears in the AppBar and the OS window title comes from two places:
 
 1. **`lib/app.dart`** — where `MaterialApp.router` or `title:` is set.
-2. **Translation files** (see Step 5) — the title comes from the localization key `appTitle`.
+2. **Translation files** (see [Step 5](#step-5--localization-adding-new-text-strings)) — the title comes from the localization key `appTitle`.
 
 Update both ARB files:
 ```jsonc
@@ -606,7 +618,7 @@ All user-facing text belongs **in the translation files**, never as string liter
 - `lib/l10n/app_en.arb` — English texts (the template file)
 - `lib/l10n/app_de.arb` — German texts
 
-**Never edit** the `.dart` files in the `l10n` folder! `app_localizations.dart`, `app_localizations_de.dart`, and `app_localizations_en.dart` are **auto-generated** and overwritten on every build. Keep them committed, though — see section 3.
+**Never edit** the `.dart` files in the `l10n` folder! `app_localizations.dart`, `app_localizations_de.dart`, and `app_localizations_en.dart` are **auto-generated** and overwritten on every build. Keep them committed, though — see [§3, "Code generation & first run"](#3-code-generation--first-run).
 
 **Example — adding a new text:**
 ```jsonc
@@ -708,7 +720,7 @@ class PatchView extends ConsumerWidget {
 }
 ```
 
-**Then register in `lib/router/app_router.dart` (Step 8).**
+**Then register in `lib/router/app_router.dart` ([Step 8](#step-8--add-a-new-route-with-go_router)).**
 
 ---
 
@@ -771,7 +783,7 @@ The sidebar is defined in `lib/views/shell/app_sidebar.dart`. Add a `_NavItem` t
 If you use auth or database features:
 
 1. Create a project on [appwrite.io](https://appwrite.io/).
-2. Enter the endpoint and project ID in the config file (see section 2). The path is exact — it is what `--dart-define-from-file` and both launch configurations reference:
+2. Enter the endpoint and project ID in the config file (see [§2, "Configure the project"](#2-configure-the-project)). The path is exact — it is what `--dart-define-from-file` and both launch configurations reference:
    ```
    config/app_config.json
    ```
@@ -791,7 +803,7 @@ During development, it's more convenient to run continuously (regenerates on sav
 dart run build_runner watch
 ```
 
-> Older guides pass `--delete-conflicting-outputs` here. With `build_runner` ≥ 2.15 the flag is obsolete and ignored — see section 3.
+> Older guides pass `--delete-conflicting-outputs` here. With `build_runner` ≥ 2.15 the flag is obsolete and ignored — see [§3, "Code generation & first run"](#3-code-generation--first-run).
 
 ---
 
@@ -808,13 +820,13 @@ dart run build_runner watch
 - [ ] `AppTheme.defaultSeedColorValue` in `app_theme.dart` adjusted (the single Dart source of truth)
 - [ ] `theme_color` in `web/manifest.json` matches it — not covered by the const
 - [ ] Default `AccentColor` entry in `accent_colors.dart` points to `AppTheme.defaultSeedColor`
-- [ ] Demo home page replaced or consciously kept (Step 8f)
-- [ ] New views and routes created; branch order consistent across all four locations (Step 8e)
+- [ ] Demo home page replaced or consciously kept ([Step 8f](#step-8--add-a-new-route-with-go_router))
+- [ ] New views and routes created; branch order consistent across all four locations ([Step 8e](#step-8--add-a-new-route-with-go_router))
 - [ ] Appwrite credentials entered (if used)
 - [ ] `.claude/launch.json` passes `--dart-define-from-file`, if you use it
 - [ ] `dart run build_runner build` executed
 - [ ] `flutter analyze` passes without errors
-- [ ] Premium licensing removed or configured (section 7) — decide before shipping
+- [ ] Premium licensing removed or configured ([§7](#7-premium-licensing--monetization-optional)) — decide before shipping
 
 ---
 
@@ -855,15 +867,14 @@ Two things still bite:
 template itself to GitHub Pages — useful for showing off a fork before
 anyone sets up their own Appwrite project.
 
-This template's own defaults are `HAS_LOGIN=true` / `HAS_PREMIUM=true` (see
-§2) — it ships expecting a real backend, unlike a freeware fork that sets
+This template's own defaults are `HAS_LOGIN=true` / `HAS_PREMIUM=true` (see [§2](#2-configure-the-project)) — it ships expecting a real backend, unlike a freeware fork that sets
 `HAS_LOGIN=false`. Rather than change those defaults, the workflow adds one
 build-time flag on top: `--dart-define=DEMO_MODE_ALLOWED=true`. Visitors
 land on the real login screen and flip its **Demo mode** switch, which
 swaps in the in-memory fakes under `lib/services/demo/` — no Appwrite
 project, no database, no server, and no secrets in the workflow. The
 premium-checkout card still renders (`HAS_PREMIUM=true`), just with its buy
-button disabled, since `PREMIUM_CHECKOUT_URL` is empty by default (§7); the
+button disabled, since `PREMIUM_CHECKOUT_URL` is empty by default ([§7](#7-premium-licensing--monetization-optional)); the
 donate button stays hidden for the same reason it's hidden in a normal
 build — it only shows when `HAS_PREMIUM=false`.
 
@@ -888,7 +899,7 @@ build — it only shows when `HAS_PREMIUM=false`.
 - **`404.html` = a copy of `index.html`** — `main.dart` calls
   `usePathUrlStrategy()` for clean URLs (`/settings`, not `/#/settings`),
   which needs the host to fall back to `index.html` for unknown paths (see
-  §6). GitHub Pages has no rewrite rules, but it does serve a custom
+  [§6](#6-build--release-web)). GitHub Pages has no rewrite rules, but it does serve a custom
   `404.html` for any unmatched path, so copying the built `index.html`
   there lets `go_router` take over client-side once the app has loaded.
 - Uses `actions/upload-pages-artifact` + `actions/deploy-pages` (the
@@ -913,7 +924,7 @@ template.
 ### If you want the real backend on the public site instead
 
 Drop `--dart-define=DEMO_MODE_ALLOWED=true` and add the `--dart-define`s
-from §2 sourced from repository secrets/variables instead of
+from [§2](#2-configure-the-project) sourced from repository secrets/variables instead of
 `config/app_config.json`. Not recommended for a public template showcase —
 it exposes your Appwrite project ID and requires registering the Pages
 origin as a Web platform in Appwrite — but it's the same mechanism either
