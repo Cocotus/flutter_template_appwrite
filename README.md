@@ -309,6 +309,38 @@ flutter build web --release
 - **Renderer:** builds default to **CanvasKit**. You can opt into the WasmGC build with `flutter build web --wasm` (the old HTML renderer no longer exists).
 - Remember to register the production hostname as a Web platform in the Appwrite console.
 
+### Release workflow (desktop builds)
+
+`.github/workflows/release.yml` builds a **Linux and a Windows release in
+parallel**, packages each as a self-contained ZIP, and creates a
+**GitHub Release** with both ZIPs attached and auto-generated release notes
+(derived from merged pull requests and commits since the previous tag).
+
+**How to trigger:**
+GitHub → **Actions** tab → **Release** → **Run workflow** → enter the version
+number (e.g. `1.0.1`) → optionally check **"Mark as pre-release"** → click
+**Run workflow**. No other setup is needed once the file exists in `main`.
+
+**Artifact naming** is derived automatically from the repository name, so a
+fork gets its own artifact names without editing the workflow:
+
+- `<repo-name>-linux-v<version>.zip`
+- `<repo-name>-windows-v<version>.zip`
+
+**`config/app_config.json` must be committed** (or the
+`--dart-define-from-file` flag on both build steps must be adapted). This is
+the same requirement as for `gh-pages.yml` — see [§11](#11-hosting-on-github-pages) for the
+same caveat and the two options for handling it.
+
+**Permissions:** the workflow declares `permissions: contents: write` so the
+publish job can create the release tag and attach files using the built-in
+`GITHUB_TOKEN`. No personal access token is needed.
+
+**Install scripts:** if your fork ships an `install.sh` (Linux) or
+`install.bat` (Windows) helper, add a copy step immediately before the zip
+command in the corresponding job — the workflow contains a comment pointing
+here. The template omits those steps because they are app-specific.
+
 ### Offline / intranet deployments
 
 Classic Flutter-web pitfall: by default a release build loads **CanvasKit from Google's CDN** (`gstatic.com`) and, when using the `google_fonts` package, **fonts from Google Fonts at runtime** — on a closed intranet the app then hangs or falls back badly. This template avoids both:
