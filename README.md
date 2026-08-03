@@ -336,10 +336,28 @@ same caveat and the two options for handling it.
 publish job can create the release tag and attach files using the built-in
 `GITHUB_TOKEN`. No personal access token is needed.
 
-**Install scripts:** if your fork ships an `install.sh` (Linux) or
-`install.bat` (Windows) helper, add a copy step immediately before the zip
-command in the corresponding job — the workflow contains a comment pointing
-here. The template omits those steps because they are app-specific.
+**Install scripts:** the template ships `install.sh` (Linux) and
+`install.bat` (Windows) at the repo root, and `release.yml` already copies
+each into its release ZIP before packaging. Both register a proper app-menu
+/ Start Menu entry with a real display name and icon — Linux `flutter build
+linux` does not otherwise produce a `.desktop` file or register an icon at
+all, and Windows `flutter build windows` does not create a Start Menu
+shortcut, so without these a user unzipping the release has to run the raw
+executable directly with no icon anywhere.
+
+**When you fork this template, edit two lines at the top of each script:**
+`app_id` (must match `BINARY_NAME` in `linux/CMakeLists.txt` /
+`windows/CMakeLists.txt` — the compiled executable's filename) and
+`app_name` (the human-readable name shown in the app menu / Start Menu).
+Forgetting this is exactly the bug that motivated writing both scripts this
+way: an earlier version of one fork's `install.sh` pointed `Icon=` at
+`assets/icon.png`, a path that was never an actual bundled asset (the real
+logo is wherever `flutter_launcher_icons`'s `image_path` in `pubspec.yaml`
+points, bundled at `data/flutter_assets/<that same path>`) — so the icon
+silently never resolved, on every install, forever. Both scripts here read
+the icon from that real path instead, and `install.sh` also installs it into
+the hicolor icon theme rather than only referencing it by absolute path, so
+it resolves reliably across desktop environments.
 
 ### Offline / intranet deployments
 

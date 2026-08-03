@@ -69,14 +69,18 @@ jobs:
         run: dart run build_runner build
       - name: Build Linux release
         run: flutter build linux --release --dart-define-from-file=config/app_config.json
-      # Package the self-contained bundle as a ZIP.
-      # If your fork ships an install.sh helper script, add a line like:
-      #   cp install.sh build/linux/x64/release/bundle/
-      # here before the zip command — see README §6 for details.
+      # install.sh expects to run from the directory containing bundle/, not
+      # from inside it (see its own directory check), so it is copied
+      # alongside bundle/ here, not into it.
+      - name: Copy install script
+        run: |
+          cp install.sh build/linux/x64/release/
+          chmod +x build/linux/x64/release/install.sh
+      # Package the self-contained bundle plus install.sh as a ZIP.
       - name: Package Linux bundle
         run: |
           cd build/linux/x64/release
-          zip -r ../../../../${{ github.event.repository.name }}-linux-v${{ github.event.inputs.version }}.zip bundle/
+          zip -r ../../../../${{ github.event.repository.name }}-linux-v${{ github.event.inputs.version }}.zip bundle/ install.sh
       - name: Upload Linux artifact
         uses: actions/upload-artifact@v4
         with:
@@ -104,10 +108,13 @@ jobs:
         run: dart run build_runner build
       - name: Build Windows release
         run: flutter build windows --release --dart-define-from-file=config/app_config.json
-      # Package the runner output folder as a ZIP.
-      # If your fork ships an install.bat helper script, add a line like:
-      #   Copy-Item install.bat build\windows\x64\runner\Release\
-      # here before the Compress-Archive command — see README §6 for details.
+      # install.bat expects to run from inside the runner output folder (it
+      # xcopies "*" from its own directory), so it is copied there, not
+      # alongside it.
+      - name: Copy install script
+        shell: pwsh
+        run: Copy-Item install.bat build\windows\x64\runner\Release\
+      # Package the runner output folder (including install.bat) as a ZIP.
       - name: Package Windows bundle
         shell: pwsh
         run: |
